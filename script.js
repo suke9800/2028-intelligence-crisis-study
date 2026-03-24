@@ -267,6 +267,57 @@ const termEntries = [
   },
 ];
 
+const translatedTermLabels = {
+  "left-tail risk": "좌측 꼬리 위험(left-tail risk)",
+  "Ghost GDP": "유령 GDP(Ghost GDP)",
+  "velocity of money": "화폐 유통 속도(velocity of money)",
+  "white-collar": "사무직(white-collar)",
+  "prime mortgage": "우량 모기지(prime mortgage)",
+  "agentic coding": "에이전트형 코딩(agentic coding)",
+  CIO: "최고정보책임자(CIO)",
+  procurement: "조달(procurement)",
+  "systems of record": "기준 시스템(systems of record)",
+  ACV: "연간 계약 금액(ACV)",
+  reflexivity: "재귀적 순환(reflexivity)",
+  friction: "마찰(friction)",
+  intermediation: "중개(intermediation)",
+  "customer lifetime value": "고객 생애가치(customer lifetime value)",
+  moat: "방어벽(moat)",
+  "habitual intermediation": "습관성 중개(habitual intermediation)",
+  interchange: "카드 수수료(interchange)",
+  stablecoin: "스테이블코인(stablecoin)",
+  "plumbing story": "배관 구조 이야기(plumbing story)",
+  JOLTS: "구인·이직 통계(JOLTS)",
+  "OpEx substitution": "운영비 대체(OpEx substitution)",
+  hyperscaler: "초대형 클라우드 사업자(hyperscaler)",
+  "current account surplus": "경상수지 흑자(current account surplus)",
+  IMF: "국제통화기금(IMF)",
+  "discretionary spending": "선택 소비(discretionary spending)",
+  "private credit": "사모대출(private credit)",
+  "leveraged buyout": "차입 인수(leveraged buyout)",
+  ARR: "연간 반복 매출(ARR)",
+  EBITDA: "상각 전 영업이익(EBITDA)",
+  "debt covenant": "재무 약정(debt covenant)",
+  "closed-end vehicle": "폐쇄형 투자 구조(closed-end vehicle)",
+  "permanent capital": "영구 자본(permanent capital)",
+  annuity: "연금성 자금(annuity)",
+  "regulatory arbitrage": "규제 차익(regulatory arbitrage)",
+  SPV: "특수목적법인(SPV)",
+  "risk-based capital": "위험기준자본(risk-based capital)",
+  HELOC: "주택담보 신용한도대출(HELOC)",
+  "debt-to-income ratio": "소득 대비 부채비율(debt-to-income ratio)",
+  QE: "양적완화(QE)",
+  "automatic stabilizers": "자동 안정 장치(automatic stabilizers)",
+  "labor share of GDP": "노동소득분배율(labor share of GDP)",
+  "inference compute tax": "추론 연산세(inference compute tax)",
+  "sovereign wealth fund": "국부펀드(sovereign wealth fund)",
+  "intelligence premium": "지능 프리미엄(intelligence premium)",
+};
+
+function getTermDisplay(label) {
+  return translatedTermLabels[label] || label;
+}
+
 function getFlatSections() {
   return articleGroups.flatMap((group) =>
     group.sections.map((section) => ({
@@ -349,8 +400,9 @@ function normalizeTerm(term) {
 function renderRichText(text) {
   return String(text).replace(/\[\[(.+?)\]\]/g, (_, rawTerm) => {
     const entry = termDictionary[normalizeTerm(rawTerm)];
-    const label = entry ? entry.label : rawTerm.trim();
-    return `<button class="term-trigger" type="button" data-term="${escapeAttr(label)}">${label}</button>`;
+    const visibleLabel = entry ? entry.display : rawTerm.trim();
+    const lookupLabel = entry ? entry.label : rawTerm.trim();
+    return `<button class="term-trigger" type="button" data-term="${escapeAttr(lookupLabel)}">${visibleLabel}</button>`;
   });
 }
 
@@ -461,6 +513,7 @@ function buildSectionQuestions(section, sections) {
 function buildTermQuestions(entry, entries) {
   const otherEntries = entries.filter((item) => item.label !== entry.label);
   const slug = entry.label.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const display = getTermDisplay(entry.label);
 
   return [
     makeQuestion({
@@ -468,20 +521,20 @@ function buildTermQuestions(entry, entries) {
       prompt: `본문 문맥에서 [[${entry.label}]]은 무엇을 뜻하나요?`,
       answer: entry.summary,
       distractors: otherEntries.map((item) => item.summary),
-      explanation: `${entry.label}은 ${entry.summary}입니다. 쉽게 말하면 ${entry.easy} 원문에서는 ${entry.why}`,
+      explanation: `${display}은 ${entry.summary}입니다. 쉽게 말하면 ${entry.easy} 원문에서는 ${entry.why}`,
       hint: entry.easy,
       category: "용어",
-      source: entry.label,
+      source: display,
     }),
     makeQuestion({
       id: `term-${slug}-label`,
       prompt: `다음 설명에 맞는 원문 용어를 고르세요. <strong>${entry.easy}</strong>`,
-      answer: entry.label,
-      distractors: otherEntries.map((item) => item.label),
+      answer: display,
+      distractors: otherEntries.map((item) => getTermDisplay(item.label)),
       explanation: `정답은 [[${entry.label}]]입니다. ${entry.summary} 원문에서는 ${entry.why}`,
       hint: entry.summary,
       category: "용어",
-      source: entry.label,
+      source: display,
     }),
   ];
 }
@@ -873,7 +926,7 @@ function openTerm(termLabel) {
     return;
   }
 
-  refs.termTitle.textContent = entry.label;
+  refs.termTitle.textContent = entry.display;
   refs.termSummary.textContent = entry.summary;
   refs.termEasy.textContent = `쉽게 말해: ${entry.easy}`;
   refs.termWhy.textContent = `이 글에서 왜 중요한가: ${entry.why}`;
@@ -1102,7 +1155,13 @@ function init() {
 }
 
 const termDictionary = Object.fromEntries(
-  termEntries.map((entry) => [entry.label.toLowerCase(), entry]),
+  termEntries.map((entry) => [
+    entry.label.toLowerCase(),
+    {
+      ...entry,
+      display: getTermDisplay(entry.label),
+    },
+  ]),
 );
 
 const overview = {
