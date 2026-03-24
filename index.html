@@ -6,7 +6,7 @@
     <title>2028 글로벌 지능 위기 | 쉬운 공부 사이트</title>
     <meta
       name="description"
-      content="Citrini Research의 THE 2028 GLOBAL INTELLIGENCE CRISIS를 아주 쉽게, 재밌게 공부할 수 있도록 재구성한 학습 사이트"
+      content="Citrini Research의 THE 2028 GLOBAL INTELLIGENCE CRISIS를 전체 흐름 중심으로 쉽게 풀어 쓴 학습용 사이트"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,193 +26,100 @@
       <div class="nav-shell">
         <a class="brand" href="#top">
           <span class="brand-mark"></span>
-          <span>GIC Study</span>
+          <span>GIC Notes</span>
         </a>
         <nav class="top-nav" aria-label="주요 섹션">
-          <a href="#summary">스토리 모드</a>
-          <a href="#timeline">타임라인</a>
-          <a href="#mechanism">도미노 구조</a>
-          <a href="#chapters">깊이 이해</a>
-          <a href="#quiz">퀴즈 / 시험</a>
+          <a href="#overview">개요</a>
+          <a href="#article">전체 읽기</a>
+          <a href="#quiz">퀴즈</a>
         </nav>
+        <button id="settings-toggle" class="settings-button" type="button" aria-label="설정 열기">
+          Aa
+        </button>
       </div>
     </header>
 
     <main id="top">
       <section class="hero section-shell">
         <div class="hero-copy" data-reveal>
-          <p class="eyebrow">Apple-style Study Edition</p>
-          <h1>
-            AI가 너무 잘 되면
-            <br />
-            왜 경제가 흔들릴까?
-          </h1>
+          <p class="eyebrow">Study Guide</p>
+          <h1>2028 글로벌 지능 위기</h1>
           <p class="hero-lead">
-            이 페이지는 원문을 “시험용 요약”이 아니라
-            <strong>정말 이해되게 만드는 공부용 인터페이스</strong>로 다시 만든
-            버전입니다. 딱딱한 문장 대신 쉬운 비유, 단어 해설, 이야기 흐름,
-            100문제 이상의 문제은행, 20문제 시험 모드까지 넣었습니다.
+            원문 전체 구조를 따라가되, 읽기 힘든 표현은 쉬운 한국어로 풀고
+            <strong>어려운 단어는 본문에서 바로 눌러 설명</strong>을 볼 수 있게 만든 학습용 해설본입니다.
           </p>
-          <div class="hero-actions">
-            <a class="button primary" href="#summary">이야기처럼 읽기</a>
-            <a class="button secondary" href="#quiz">시험 모드 바로 가기</a>
-          </div>
-          <div class="hero-note">
-            <span>원문 성격: 예언이 아니라 시나리오 실험</span>
-            <a href="https://www.citriniresearch.com/p/2028gic" target="_blank" rel="noreferrer">
-              원문 보기
-            </a>
-          </div>
         </div>
 
-        <div class="hero-panel" data-reveal>
-          <div class="orbital-stage" aria-hidden="true">
-            <span class="orb orb-a"></span>
-            <span class="orb orb-b"></span>
-            <span class="orb orb-c"></span>
-          </div>
-          <div class="panel-copy">
-            <p class="panel-kicker">이 글을 볼 때 먼저 잡아야 할 숫자 감각</p>
-            <div class="metric-grid">
-              <article class="metric-card">
-                <strong>10.2%</strong>
-                <span>원문이 가정한 2028년 실업률</span>
-              </article>
-              <article class="metric-card">
-                <strong>-38%</strong>
-                <span>원문 속 S&amp;P 최대 낙폭</span>
-              </article>
-              <article class="metric-card">
-                <strong>50%+</strong>
-                <span>상위 10%가 차지하는 소비 비중</span>
-              </article>
-              <article class="metric-card">
-                <strong>$13T</strong>
-                <span>미국 주택담보대출 시장 규모</span>
-              </article>
-            </div>
-            <p class="panel-summary">
-              핵심은 이것입니다. <strong>AI가 좋아진 것</strong> 자체보다,
-              그 이익이 사람 월급 대신 자본과 컴퓨트로만 몰릴 때 어떤 도미노가
-              생기는지를 묻는 글입니다.
-            </p>
-          </div>
+        <div class="hero-stats" data-reveal>
+          <article class="hero-stat">
+            <span>실업률 가정</span>
+            <strong>10.2%</strong>
+          </article>
+          <article class="hero-stat">
+            <span>S&amp;P 낙폭</span>
+            <strong>-38%</strong>
+          </article>
+          <article class="hero-stat">
+            <span>상위 10% 소비 비중</span>
+            <strong>50%+</strong>
+          </article>
+          <article class="hero-stat">
+            <span>미국 모기지 시장</span>
+            <strong>$13T</strong>
+          </article>
         </div>
       </section>
 
-      <section class="study-strip section-shell" data-reveal>
-        <div class="strip-card">
-          <span>읽는 방식</span>
-          <strong>영화 보듯 읽기</strong>
-          <p>각 장면을 “왜 이런 일이 생기지?”라는 이야기 흐름으로 풀어줍니다.</p>
-        </div>
-        <div class="strip-card">
-          <span>단어 도움</span>
-          <strong>헷갈리는 단어 바로 해설</strong>
-          <p>어려운 경제 용어는 그 자리에서 바로 풀어줍니다. 딴 데 갈 필요가 없습니다.</p>
-        </div>
-        <div class="strip-card">
-          <span>실전 확인</span>
-          <strong>문제은행 100+ / 시험 20</strong>
-          <p>힌트가 한 번 나오고, 두 번 틀리면 긴 해설로 왜 틀렸는지 끝까지 설명합니다.</p>
-        </div>
-      </section>
-
-      <section id="summary" class="section-shell">
-        <div class="section-head" data-reveal>
-          <p class="eyebrow">Story Mode</p>
-          <h2>이 글을 교과서처럼 말고, 이야기처럼 읽기</h2>
+      <section id="overview" class="section-shell">
+        <div class="section-head compact" data-reveal>
+          <p class="eyebrow">Overview</p>
+          <h2>먼저 무엇을 읽고 있는지부터 잡기</h2>
           <p>
-            “AI가 좋아진다”에서 끝나는 글이 아니라,
-            <strong>AI가 너무 잘 되면 경제와 금융이 어떻게 꼬일 수 있는지</strong>를
-            한 장면씩 보여주는 이야기입니다.
+            이 글은 “AI가 실패해서 위기가 온다”가 아니라 “AI가 너무 잘돼서 인간 소득과 소비가 흔들릴 수 있다”는
+            시나리오를 시험합니다.
           </p>
         </div>
-        <div id="story-list" class="story-list"></div>
+        <div id="overview-content" class="overview-content"></div>
       </section>
 
-      <section id="timeline" class="section-shell">
-        <div class="section-head" data-reveal>
-          <p class="eyebrow">Timeline</p>
-          <h2>시간 순서로 보면 훨씬 쉽다</h2>
+      <section id="article" class="section-shell article-shell">
+        <div class="section-head compact" data-reveal>
+          <p class="eyebrow">Full Reading</p>
+          <h2>원문 전체를 순서대로 쉽게 읽기</h2>
           <p>
-            이 글이 어려운 이유는 경제 용어보다
-            <strong>사건이 층층이 쌓이는 순서</strong> 때문입니다. 그래서 각
-            시점마다 “무슨 일”, “왜 중요”, “이 단어 뜻”을 붙였습니다.
+            아래 내용은 원문 전체 아이디어를 빠짐없이 공부하기 쉽게 다시 정리한 해설입니다. 원문 문장을 그대로 복사한
+            페이지가 아니라, 구조와 논리를 따라가며 풀어 쓴 학습용 재구성본입니다.
           </p>
         </div>
-        <div id="timeline-grid" class="timeline-grid"></div>
-      </section>
 
-      <section id="mechanism" class="section-shell dark-shell">
-        <div class="section-head light" data-reveal>
-          <p class="eyebrow">Domino Logic</p>
-          <h2>이 글의 심장: 지능 대체 도미노</h2>
-          <p>
-            사실 이 긴 글은 한 문장으로 요약할 수 있습니다.
-            <strong>사람의 소득이 약해질수록 기업은 더 많은 AI를 사게 되고,
-            그게 다시 사람의 소득을 더 약하게 만든다</strong>는 루프입니다.
-          </p>
+        <div class="article-layout">
+          <aside id="article-outline" class="article-outline" data-reveal></aside>
+          <div id="article-groups" class="article-groups"></div>
         </div>
-        <div class="mechanism-shell" data-reveal>
-          <div id="loop-nav" class="loop-nav" role="tablist" aria-label="도미노 단계"></div>
-          <article id="loop-detail" class="loop-detail" aria-live="polite"></article>
-        </div>
-      </section>
-
-      <section id="chapters" class="section-shell">
-        <div class="section-head" data-reveal>
-          <p class="eyebrow">Deep Dive</p>
-          <h2>원문 전체를 더 깊고 쉽게 이해하기</h2>
-          <p>
-            각 챕터마다
-            <strong>재밌는 한 줄</strong>, <strong>쉬운 버전</strong>,
-            <strong>조금 더 깊은 설명</strong>, <strong>헷갈리기 쉬운 포인트</strong>,
-            <strong>필수 단어 해설</strong>을 넣었습니다.
-          </p>
-        </div>
-        <div id="chapter-list" class="chapter-list"></div>
-      </section>
-
-      <section id="glossary" class="section-shell">
-        <div class="section-head" data-reveal>
-          <p class="eyebrow">Word Lab</p>
-          <h2>단어 때문에 막히지 않게</h2>
-          <p>
-            경제 글을 읽다가 멈추는 순간은 대개
-            <strong>뜻은 아는데 감이 안 오는 단어</strong>에서 생깁니다. 그래서
-            모든 핵심 용어를 쉬운 말로 다시 설명해 두었습니다.
-          </p>
-        </div>
-        <div id="glossary-grid" class="glossary-grid"></div>
       </section>
 
       <section id="quiz" class="section-shell">
-        <div class="section-head" data-reveal>
-          <p class="eyebrow">Quiz Engine</p>
-          <h2>퀴즈도 진짜 공부가 되게</h2>
+        <div class="section-head compact" data-reveal>
+          <p class="eyebrow">Quiz</p>
+          <h2>읽은 뒤 바로 점검하기</h2>
           <p>
-            학습 모드에서는 문제를 풀다 틀리면
-            <strong>힌트를 한 번</strong> 주고, 다시 틀리면
-            <strong>오답 처리 + 긴 해설</strong>로 왜 헷갈렸는지 풀어줍니다.
-            시험 모드에서는 20문제가 랜덤 출제됩니다.
+            학습 모드에서는 한 번 틀리면 힌트가 나오고, 두 번째로 틀리면 긴 해설이 나옵니다. 시험 모드는 랜덤 20문제로
+            실전처럼 푸는 방식입니다.
           </p>
         </div>
 
-        <div class="quiz-hub" data-reveal>
+        <div class="quiz-shell" data-reveal>
           <div class="quiz-mode-switch" role="tablist" aria-label="퀴즈 모드">
             <button id="mode-study" class="mode-button active" type="button">학습 모드</button>
             <button id="mode-exam" class="mode-button" type="button">시험 모드</button>
           </div>
 
-          <section id="study-panel" class="quiz-mode-panel active" aria-label="학습 모드">
-            <div class="question-bank-header">
+          <section id="study-panel" class="quiz-panel active" aria-label="학습 모드">
+            <div class="quiz-toolbar">
               <div>
                 <p class="panel-kicker">Question Bank</p>
                 <h3 id="question-bank-count">총 0문제</h3>
-                <p class="quiz-rule">
-                  첫 오답: 힌트 제공. 두 번째 오답: 오답 처리 + 긴 해설.
-                </p>
+                <p class="quiz-rule">첫 오답은 힌트, 두 번째 오답은 오답 처리와 긴 해설.</p>
               </div>
               <div id="category-filters" class="filter-row"></div>
             </div>
@@ -224,21 +131,18 @@
             </div>
           </section>
 
-          <section id="exam-panel" class="quiz-mode-panel" aria-label="시험 모드">
-            <div class="exam-intro" id="exam-intro">
+          <section id="exam-panel" class="quiz-panel" aria-label="시험 모드">
+            <div id="exam-intro" class="exam-intro">
               <p class="panel-kicker">Exam Mode</p>
-              <h3>20문제 시험 시작</h3>
-              <p>
-                문제은행에서 20문제를 랜덤으로 뽑아 실제 시험처럼 풉니다. 시험
-                중에는 힌트가 없고, 제출 후 점수와 자세한 해설이 나옵니다.
-              </p>
+              <h3>랜덤 20문제 시험</h3>
+              <p>본문 전체와 용어를 섞어서 20문제가 출제됩니다. 제출하면 점수와 문제별 리뷰가 바로 나옵니다.</p>
               <button id="start-exam" class="button primary" type="button">시험 시작</button>
             </div>
 
             <div id="exam-shell" class="exam-shell" hidden>
               <div class="exam-head">
                 <span id="exam-progress" class="exam-pill">1 / 20</span>
-                <span id="exam-answered" class="exam-pill muted">0문제 답변함</span>
+                <span id="exam-answered" class="exam-pill muted">0문제 선택</span>
               </div>
               <div id="exam-question-card" class="exam-question-card"></div>
               <div class="exam-actions">
@@ -256,23 +160,46 @@
       <section class="section-shell source-shell" data-reveal>
         <div class="source-card">
           <p class="eyebrow">Source Note</p>
-          <h2>학습용으로 재구성한 페이지입니다</h2>
+          <h2>원문과 함께 보면 더 좋습니다</h2>
           <p>
-            원문의 주장과 구조는 유지하되, 문장은 모두 훨씬 쉬운 한국어로 다시
-            풀어썼습니다. 직접 원문과 비교하며 공부하고 싶다면 아래 링크를 함께
-            보세요.
+            이 사이트는 Citrini Research 글의 전체 논리를 공부하기 쉽게 풀어 쓴 해설본입니다. 원문 뉘앙스와 문장 결을
+            직접 비교하고 싶다면 아래 링크를 함께 보세요.
           </p>
-          <a
-            class="button primary"
-            href="https://www.citriniresearch.com/p/2028gic"
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a class="button primary" href="https://www.citriniresearch.com/p/2028gic" target="_blank" rel="noreferrer">
             Citrini Research 원문 열기
           </a>
         </div>
       </section>
     </main>
+
+    <div id="term-modal" class="term-modal" hidden>
+      <div class="term-backdrop" data-close-term="true"></div>
+      <div class="term-panel" role="dialog" aria-modal="true" aria-labelledby="term-title">
+        <button class="term-close" id="term-close" type="button" aria-label="단어 설명 닫기">×</button>
+        <p class="panel-kicker">용어 설명</p>
+        <h3 id="term-title"></h3>
+        <p id="term-summary" class="term-summary"></p>
+        <div class="term-body">
+          <p id="term-easy"></p>
+          <p id="term-why"></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="settings-panel" class="settings-panel" hidden>
+      <div class="settings-backdrop" data-close-settings="true"></div>
+      <div class="settings-card" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <button class="settings-close" id="settings-close" type="button" aria-label="설정 닫기">×</button>
+        <p class="panel-kicker">설정</p>
+        <h3 id="settings-title">글자 크기 조절</h3>
+        <label class="range-label" for="font-size-range">
+          <span>전체 글자 크기</span>
+          <strong id="font-size-value">100%</strong>
+        </label>
+        <input id="font-size-range" type="range" min="90" max="125" value="100" />
+        <button id="font-size-reset" class="button tertiary" type="button">기본 크기로 되돌리기</button>
+      </div>
+    </div>
 
     <script src="./script.js"></script>
   </body>
