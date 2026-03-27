@@ -563,14 +563,22 @@ function renderOutline() {
     <p class="panel-kicker">Outline</p>
     <h3>원문 순서</h3>
     <nav>
-      ${getFlatSections()
+      ${articleGroups
         .map(
-          (section) => `
-            <a href="#${section.id}" data-outline-link="${section.id}">
-              <span>${section.groupLabel}</span>
-              ${section.title}
-              <small>${section.originalTitle}</small>
-            </a>
+          (group) => `
+            <section class="outline-group">
+              <p class="outline-group-label">${group.label}</p>
+              ${group.sections
+                .map(
+                  (section) => `
+                    <a href="#${section.id}" data-outline-link="${section.id}">
+                      ${section.title}
+                      <small>${section.originalTitle}</small>
+                    </a>
+                  `,
+                )
+                .join("")}
+            </section>
           `,
         )
         .join("")}
@@ -1066,6 +1074,95 @@ function setupScrollProgress() {
   window.addEventListener("scroll", update, { passive: true });
 }
 
+function setupDraggableOutline() {
+  const outline = refs.articleOutline;
+
+  if (!outline) {
+    return;
+  }
+
+  let pointerId = null;
+  let startX = 0;
+  let startY = 0;
+  let startLeft = 0;
+  let startTop = 0;
+  let hasDragged = false;
+  let suppressClick = false;
+
+  outline.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "touch" || event.button !== 0) {
+      return;
+    }
+
+    pointerId = event.pointerId;
+    startX = event.clientX;
+    startY = event.clientY;
+    startLeft = outline.scrollLeft;
+    startTop = outline.scrollTop;
+    hasDragged = false;
+    outline.classList.add("dragging");
+    outline.setPointerCapture?.(event.pointerId);
+  });
+
+  outline.addEventListener("pointermove", (event) => {
+    if (pointerId !== event.pointerId) {
+      return;
+    }
+
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+
+    if (!hasDragged && Math.abs(deltaX) + Math.abs(deltaY) > 6) {
+      hasDragged = true;
+    }
+
+    if (!hasDragged) {
+      return;
+    }
+
+    outline.scrollLeft = startLeft - deltaX;
+    outline.scrollTop = startTop - deltaY;
+    event.preventDefault();
+  });
+
+  const endDrag = (event) => {
+    if (pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (hasDragged) {
+      suppressClick = true;
+      window.setTimeout(() => {
+        suppressClick = false;
+      }, 0);
+    }
+
+    outline.classList.remove("dragging");
+    outline.releasePointerCapture?.(event.pointerId);
+    pointerId = null;
+  };
+
+  outline.addEventListener("pointerup", endDrag);
+  outline.addEventListener("pointercancel", endDrag);
+  outline.addEventListener("lostpointercapture", () => {
+    outline.classList.remove("dragging");
+    pointerId = null;
+  });
+  outline.addEventListener(
+    "click",
+    (event) => {
+      if (!suppressClick) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      suppressClick = false;
+    },
+    true,
+  );
+}
+
 function bindEvents() {
   document.addEventListener("click", (event) => {
     const target = event.target;
@@ -1188,6 +1285,7 @@ function init() {
   setupRevealObserver();
   setupOutlineHighlight();
   setupScrollProgress();
+  setupDraggableOutline();
 }
 
 const termDictionary = Object.fromEntries(
@@ -1219,7 +1317,7 @@ const overview = {
 const articleGroups = [
   {
     id: "group-frame",
-    label: "Group 1",
+    label: "1부",
     quizCategory: "큰 그림",
     title: "큰 그림부터 읽기",
     intro: "처음 두 파트는 이 글이 무엇을 경고하는지, 그리고 왜 단순한 기술주 이야기로 끝나지 않는지를 깔아 줍니다.",
@@ -1282,7 +1380,7 @@ const articleGroups = [
   },
   {
     id: "group-disruption",
-    label: "Group 2",
+    label: "2부",
     quizCategory: "사업 붕괴",
     title: "사업 모델이 먼저 흔들리는 자리",
     intro: "원문은 위기의 출발점으로 소프트웨어와 중개 비즈니스를 봅니다. 둘 다 사람의 귀찮음과 조직의 마찰을 먹고 자라 온 구조이기 때문입니다.",
@@ -1345,7 +1443,7 @@ const articleGroups = [
   },
   {
     id: "group-macro",
-    label: "Group 3",
+    label: "3부",
     quizCategory: "실물경제",
     title: "산업 문제에서 경기 문제로 번지는 구간",
     intro: "원문은 여기서 시야를 넓힙니다. 이게 기술 업종 내부의 일이 아니라 미국 소비와 노동시장 전체를 건드릴 수 있다고 주장합니다.",
@@ -1408,7 +1506,7 @@ const articleGroups = [
   },
   {
     id: "group-finance",
-    label: "Group 4",
+    label: "4부",
     quizCategory: "금융 전염",
     title: "노동 충격이 금융 구조를 건드리는 구간",
     intro: "실물경제가 약해지면 결국 금융이 그 변화를 가격에 반영합니다. 원문은 소프트웨어 현금흐름과 가계 대출이 가장 민감한 고리라고 봅니다.",
@@ -1471,7 +1569,7 @@ const articleGroups = [
   },
   {
     id: "group-policy",
-    label: "Group 5",
+    label: "5부",
     quizCategory: "정책과 결론",
     title: "정책 시간표와 마지막 결론",
     intro: "마지막 두 파트는 결국 시간을 다룹니다. 시장이 재가격되는 속도와 정부가 새 제도를 만드는 속도 중 어느 쪽이 더 빠르냐는 질문입니다.",

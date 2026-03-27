@@ -207,7 +207,7 @@ section[id] {
 .hero-stat span,
 .panel-kicker,
 .section-label,
-.article-outline a span,
+.outline-group-label,
 .eyebrow {
   color: var(--accent);
   font-size: 0.76rem;
@@ -323,12 +323,31 @@ section[id] {
   top: 96px;
   padding: 18px;
   border-radius: 26px;
+  max-height: calc(100vh - 118px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  cursor: grab;
 }
 
 .article-outline nav {
   display: grid;
-  gap: 8px;
+  gap: 14px;
   margin-top: 12px;
+}
+
+.article-outline.dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.outline-group + .outline-group {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.outline-group-label {
+  margin: 0 6px 8px;
 }
 
 .article-outline a {
@@ -782,6 +801,9 @@ section[id] {
   .article-outline {
     position: relative;
     top: 0;
+    max-height: none;
+    overflow: visible;
+    cursor: default;
   }
 }
 
