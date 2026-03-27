@@ -473,6 +473,25 @@ section[id] {
   margin-top: 18px;
 }
 
+.reading-appendix {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(23, 23, 26, 0.08);
+}
+
+.reading-appendix-label {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.appendix-points {
+  margin-top: 12px;
+}
+
 .takeaways ul {
   display: grid;
   gap: 10px;
@@ -1144,6 +1163,11 @@ section[id] {
 
 .mobile-section-body .takeaways {
   margin-top: 12px;
+}
+
+.mobile-section-body .reading-appendix {
+  margin-top: 16px;
+  padding-top: 14px;
 }
 
 [data-reveal].will-reveal {
