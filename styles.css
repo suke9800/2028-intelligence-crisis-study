@@ -133,7 +133,7 @@ input {
 .mobile-header-actions {
   display: none;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   margin-left: auto;
 }
 
@@ -170,6 +170,12 @@ input {
 
 .mobile-header-button {
   min-width: auto;
+}
+
+.mobile-header-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .section-shell {
@@ -887,6 +893,7 @@ section[id] {
 
 .mobile-reading-mode {
   --content-width: min(100vw - 8px, 100%);
+  --mobile-inline-pad: 16px;
 }
 
 .mobile-reading-mode .site-header {
@@ -951,7 +958,7 @@ section[id] {
 .mobile-reading-mode .overview-content,
 .mobile-reading-mode .source-card,
 .mobile-reading-mode .quiz-shell {
-  padding: 16px 16px;
+  padding: 16px var(--mobile-inline-pad);
   border-radius: 22px;
 }
 
@@ -965,7 +972,7 @@ section[id] {
 }
 
 .mobile-reading-mode .section-head {
-  padding: 26px 16px 10px;
+  padding: 26px var(--mobile-inline-pad) 10px;
 }
 
 .mobile-reading-mode .section-head.compact h2,
@@ -1023,7 +1030,7 @@ section[id] {
   position: relative;
   display: grid;
   gap: 6px;
-  padding: 15px 15px;
+  padding: 15px var(--mobile-inline-pad);
   cursor: pointer;
   list-style: none;
 }
@@ -1074,7 +1081,7 @@ section[id] {
 }
 
 .mobile-card-body {
-  padding: 0 15px 10px;
+  padding: 0 var(--mobile-inline-pad) 10px;
 }
 
 .mobile-card-intro {
