@@ -1111,7 +1111,7 @@ section[id] {
   margin-top: 14px;
 }
 
-[data-reveal] {
+[data-reveal].will-reveal {
   opacity: 0;
   transform: translateY(18px);
   transition:
@@ -1119,7 +1119,8 @@ section[id] {
     transform 620ms ease;
 }
 
-[data-reveal].is-visible {
+[data-reveal].is-visible,
+[data-reveal]:not(.will-reveal) {
   opacity: 1;
   transform: translateY(0);
 }
@@ -1136,7 +1137,9 @@ section[id] {
     animation: none !important;
   }
 
-  [data-reveal] {
+  [data-reveal].will-reveal,
+  [data-reveal].is-visible,
+  [data-reveal]:not(.will-reveal) {
     opacity: 1;
     transform: none;
   }

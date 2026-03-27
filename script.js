@@ -1579,6 +1579,7 @@ function setupRevealObserver() {
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
+          entry.target.classList.remove("will-reveal");
           entry.target.classList.add("is-visible");
           observer.unobserve(entry.target);
         }
@@ -1587,7 +1588,20 @@ function setupRevealObserver() {
     { threshold: 0.14 },
   );
 
-  nodes.forEach((node) => observer.observe(node));
+  nodes.forEach((node) => {
+    const rect = node.getBoundingClientRect();
+    const inInitialView = rect.top < window.innerHeight * 0.92;
+
+    if (inInitialView) {
+      node.classList.remove("will-reveal");
+      node.classList.add("is-visible");
+      return;
+    }
+
+    node.classList.remove("is-visible");
+    node.classList.add("will-reveal");
+    observer.observe(node);
+  });
 }
 
 function setupOutlineHighlight() {
