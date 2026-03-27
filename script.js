@@ -265,6 +265,174 @@ const termEntries = [
     easy: "생각하고 판단하고 설계하는 능력이 귀해서 높은 연봉을 받던 프리미엄입니다.",
     why: "원문 마지막 결론은 이 프리미엄이 재가격되고 있다는 데 있습니다.",
   },
+  {
+    label: "productivity",
+    summary: "같은 시간과 자원으로 얼마나 많은 산출을 내는지 보여 주는 생산성",
+    easy: "사람이나 회사가 같은 노력으로 더 많은 결과를 내면 생산성이 오른 것입니다.",
+    why: "원문은 AI 시대에 [[productivity]] 수치가 좋아 보여도 소득과 소비가 같이 좋아지는 것은 아니라는 점을 강조합니다.",
+    aliases: ["생산성"],
+  },
+  {
+    label: "nominal GDP",
+    summary: "물가 변화를 따로 빼지 않고 현재 가격 기준으로 계산한 명목 GDP",
+    easy: "나라 경제 규모를 지금의 가격표 그대로 합산한 숫자입니다.",
+    why: "원문은 [[nominal GDP]]가 좋아 보여도 체감 경기와 괴리될 수 있다는 점을 짚습니다.",
+    aliases: ["명목 GDP"],
+  },
+  {
+    label: "annualized growth",
+    summary: "현재 증가 속도를 1년 기준으로 환산해 보는 연율 성장",
+    easy: "이번 분기의 흐름이 1년 내내 이어진다고 가정해 성장률을 환산한 수치입니다.",
+    why: "원문은 겉으로 보이는 성장 속도가 좋아도 그 안의 분배 구조는 나빠질 수 있다고 설명합니다.",
+    aliases: ["연율 성장"],
+  },
+  {
+    label: "real wage growth",
+    summary: "물가를 반영한 뒤 실제 구매력 기준으로 본 임금 성장",
+    easy: "월급 숫자만이 아니라, 그 돈으로 실제 얼마나 살 수 있는지를 본 임금 변화입니다.",
+    why: "원문은 AI 생산성 호황 속에서도 [[real wage growth]]는 약해질 수 있다고 봅니다.",
+    aliases: ["실질 임금 성장"],
+  },
+  {
+    label: "consumer economy",
+    summary: "가계 소비가 경제 움직임의 중심이 되는 소비 경제",
+    easy: "사람들이 쓰는 돈이 경제를 크게 움직이는 구조입니다.",
+    why: "원문은 미국의 [[consumer economy]]가 약해지면 생산성 숫자만으로는 전체 경제를 지탱하기 어렵다고 말합니다.",
+    aliases: ["소비 경제", "소비경제"],
+  },
+  {
+    label: "margin",
+    summary: "매출에서 비용을 뺀 뒤 남는 이익 폭, 즉 마진",
+    easy: "돈을 벌고 나서 실제로 얼마나 남는지를 보여 주는 여유분입니다.",
+    why: "원문에서는 해고와 자동화가 처음엔 [[margin]] 개선으로 보이지만, 나중에는 소비와 매출을 훼손해 다시 압박이 된다고 설명합니다.",
+    aliases: ["마진", "마진 압박"],
+  },
+  {
+    label: "corporate profits",
+    summary: "기업 전체가 벌어들이는 이익",
+    easy: "회사들이 사업해서 남기는 돈의 합입니다.",
+    why: "원문은 초반 AI 도입 국면에서 [[corporate profits]]가 좋아 보여 시장이 더 낙관적으로 반응할 수 있다고 봅니다.",
+    aliases: ["기업 이익"],
+  },
+  {
+    label: "underwriting",
+    summary: "대출이나 금융 계약의 위험을 심사하고 가격을 매기는 인수 심사",
+    easy: "돈을 빌려줘도 되는지, 어느 조건으로 빌려줄지를 따져 보는 과정입니다.",
+    why: "원문은 사무직 소득 기반이 흔들리면 기존의 [[underwriting]] 가정도 다시 계산해야 한다고 봅니다.",
+    aliases: ["언더라이팅", "인수 심사"],
+  },
+  {
+    label: "recurring revenue",
+    summary: "한 번이 아니라 반복적으로 들어오는 매출",
+    easy: "구독이나 장기 계약처럼 계속해서 다시 들어오는 매출입니다.",
+    why: "원문은 AI가 고객의 선택을 바꾸면 [[recurring revenue]]도 생각보다 덜 반복적일 수 있다고 지적합니다.",
+    aliases: ["반복 매출"],
+  },
+  {
+    label: "default cycle",
+    summary: "채무불이행이 연쇄적으로 늘어나는 디폴트 사이클",
+    easy: "빚을 못 갚는 사례가 한두 건이 아니라 줄줄이 늘어나는 구간입니다.",
+    why: "원문은 오랫동안 진짜 [[default cycle]]이 없었던 탓에 시장이 위험에 둔감해졌다고 봅니다.",
+    aliases: ["디폴트 사이클", "채무불이행 사이클"],
+  },
+  {
+    label: "sector risk",
+    summary: "특정 업종 안에 머무는 섹터 리스크",
+    easy: "문제가 한 산업이나 한 분야 안에서만 끝나는 위험입니다.",
+    why: "원문은 AI 충격이 처음엔 [[sector risk]]처럼 보이지만 곧 더 넓은 문제로 번진다고 설명합니다.",
+    aliases: ["섹터 리스크"],
+  },
+  {
+    label: "systemic risk",
+    summary: "경제 시스템 전체를 흔들 수 있는 시스템 리스크",
+    easy: "한 군데 문제가 아니라 여러 고리를 타고 전체 구조까지 흔드는 위험입니다.",
+    why: "원문은 사무직 소득과 소비, 금융이 연결돼 있어 AI 충격이 [[systemic risk]]로 커질 수 있다고 봅니다.",
+    aliases: ["시스템 리스크"],
+  },
+  {
+    label: "yield",
+    summary: "채권이나 자산에서 기대하는 수익률, 특히 금리 수익률",
+    easy: "돈을 맡겼을 때 얼마를 돌려받을지 보여 주는 비율입니다.",
+    why: "원문은 장기 [[yield]] 하락을 통해 경기 둔화 신호와 AI 투자 열기를 함께 읽습니다.",
+    aliases: ["수익률", "장기금리", "금리 수익률"],
+  },
+  {
+    label: "capex",
+    summary: "공장, 장비, 데이터센터 같은 장기 자산에 쓰는 설비투자",
+    easy: "당장 쓰고 끝나는 비용이 아니라, 오래 쓰려고 크게 투자하는 돈입니다.",
+    why: "원문은 사무직 비용이 줄어도 AI [[capex]]는 강하게 유지될 수 있다는 비대칭을 보여 줍니다.",
+    aliases: ["설비투자"],
+  },
+  {
+    label: "information asymmetry",
+    summary: "한쪽만 더 많은 정보를 가진 상태인 정보 비대칭",
+    easy: "거래하는 둘 중 한쪽이 훨씬 더 많이 알고 있는 상황입니다.",
+    why: "원문은 에이전트가 늘어나면 [[information asymmetry]]가 줄어 수수료와 중개 마진이 압박받을 수 있다고 봅니다.",
+    aliases: ["정보 비대칭"],
+  },
+  {
+    label: "direct lending",
+    summary: "은행 대신 투자자금이 직접 빌려주는 직접 대출",
+    easy: "중간 은행보다 펀드나 투자자가 기업에 바로 돈을 빌려주는 구조입니다.",
+    why: "원문은 AI 충격이 [[direct lending]] 장부와 사모 신용 구조에도 번질 수 있다고 설명합니다.",
+    aliases: ["직접 대출"],
+  },
+  {
+    label: "municipal bond",
+    summary: "지방정부나 공공기관이 발행하는 지방채",
+    easy: "도시나 지방정부가 돈을 조달하려고 발행하는 채권입니다.",
+    why: "원문은 지역별 세수 구조가 달라 [[municipal bond]] 위험도 차별화될 수 있다고 암시합니다.",
+    aliases: ["지방채"],
+  },
+  {
+    label: "deflationary spiral",
+    summary: "수요 약화와 가격 하락, 소득 악화가 서로를 강화하는 디플레이션 나선",
+    easy: "사람들이 덜 쓰고 가격이 약해지고 소득도 줄어 다시 더 안 쓰게 되는 악순환입니다.",
+    why: "원문은 정책이 늦으면 [[deflationary spiral]]이 더 깊어질 수 있다고 경고합니다.",
+    aliases: ["디플레이션 나선", "디플레 나선"],
+  },
+  {
+    label: "enterprise value",
+    summary: "주식 가치와 순부채를 함께 본 기업가치",
+    easy: "회사를 통째로 산다고 생각할 때 붙는 전체 가격표입니다.",
+    why: "원문은 중개와 소프트웨어 모델이 흔들리면 [[enterprise value]] 가정도 다시 써야 한다고 봅니다.",
+    aliases: ["기업가치"],
+  },
+  {
+    label: "tax receipts",
+    summary: "정부가 실제로 걷는 세수",
+    easy: "세금 제도가 아니라, 정부 금고로 실제 들어오는 세금 흐름입니다.",
+    why: "원문은 AI로 노동소득과 소비가 약해지면 [[tax receipts]]가 예상보다 덜 들어올 수 있다고 설명합니다.",
+    aliases: ["세수"],
+  },
+  {
+    label: "unemployment rate",
+    summary: "일하고 싶은 사람 중 실제로 일자리를 못 구한 비율인 실업률",
+    easy: "노동시장 전체에서 일자리가 없는 사람이 얼마나 되는지 보여 주는 대표 지표입니다.",
+    why: "원문은 [[unemployment rate]]가 위기 결과를 보여 주는 헤드라인 숫자지만, 그 전에 더 많은 균열이 먼저 생긴다고 봅니다.",
+    aliases: ["실업률"],
+  },
+  {
+    label: "drawdown",
+    summary: "고점 대비 얼마나 내려왔는지 보여 주는 낙폭",
+    easy: "주가나 자산가격이 가장 높았던 지점에서 얼마나 빠졌는지 보는 방식입니다.",
+    why: "원문은 시장이 AI 낙관에서 위기 인식으로 바뀌는 과정을 [[drawdown]] 숫자로 보여 줍니다.",
+    aliases: ["낙폭"],
+  },
+  {
+    label: "mortgage market",
+    summary: "주택담보대출이 거래되고 유지되는 모기지 시장",
+    easy: "집을 담보로 한 대출이 쌓여 있는 아주 큰 금융시장입니다.",
+    why: "원문은 사무직 소득 충격이 결국 [[mortgage market]] 안정성까지 건드릴 수 있다고 봅니다.",
+    aliases: ["모기지 시장", "주택담보대출 시장"],
+  },
+  {
+    label: "tax base",
+    summary: "정부가 세금을 걷을 수 있는 소득과 소비의 기반인 세원",
+    easy: "나라가 어디에서 세금을 걷는지 받쳐 주는 바닥입니다.",
+    why: "원문은 노동소득이 줄면 기존 [[tax base]]도 같이 약해질 수 있다고 설명합니다.",
+    aliases: ["세원"],
+  },
 ];
 
 const translatedTermLabels = {
@@ -312,6 +480,30 @@ const translatedTermLabels = {
   "inference compute tax": "추론 연산세(inference compute tax)",
   "sovereign wealth fund": "국부펀드(sovereign wealth fund)",
   "intelligence premium": "지능 프리미엄(intelligence premium)",
+  productivity: "생산성(productivity)",
+  "nominal GDP": "명목 GDP(nominal GDP)",
+  "annualized growth": "연율 성장(annualized growth)",
+  "real wage growth": "실질 임금 성장(real wage growth)",
+  "consumer economy": "소비 경제(consumer economy)",
+  margin: "마진(margin)",
+  "corporate profits": "기업 이익(corporate profits)",
+  underwriting: "인수 심사(underwriting)",
+  "recurring revenue": "반복 매출(recurring revenue)",
+  "default cycle": "디폴트 사이클(default cycle)",
+  "sector risk": "섹터 리스크(sector risk)",
+  "systemic risk": "시스템 리스크(systemic risk)",
+  yield: "수익률(yield)",
+  capex: "설비투자(capex)",
+  "information asymmetry": "정보 비대칭(information asymmetry)",
+  "direct lending": "직접 대출(direct lending)",
+  "municipal bond": "지방채(municipal bond)",
+  "deflationary spiral": "디플레이션 나선(deflationary spiral)",
+  "enterprise value": "기업가치(enterprise value)",
+  "tax receipts": "세수(tax receipts)",
+  "unemployment rate": "실업률(unemployment rate)",
+  drawdown: "낙폭(drawdown)",
+  "mortgage market": "모기지 시장(mortgage market)",
+  "tax base": "세원(tax base)",
 };
 
 function getTermDisplay(label) {
@@ -414,17 +606,103 @@ function escapeAttr(value) {
     .replace(/>/g, "&gt;");
 }
 
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function normalizeTerm(term) {
   return String(term).trim().toLowerCase();
 }
 
+function buildTermTriggerMarkup(lookupLabel, visibleLabel) {
+  return `<button class="term-trigger" type="button" data-term="${escapeAttr(lookupLabel)}">${visibleLabel}</button>`;
+}
+
+function buildTermTriggerNode(lookupLabel, visibleLabel) {
+  const button = document.createElement("button");
+  button.className = "term-trigger";
+  button.type = "button";
+  button.dataset.term = lookupLabel;
+  button.textContent = visibleLabel;
+  return button;
+}
+
+function autoLinkEconomicTerms(html) {
+  if (!autoLinkPattern) {
+    return html;
+  }
+
+  const root = document.createElement("div");
+  root.innerHTML = html;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const value = node.nodeValue || "";
+      const parent = node.parentElement;
+
+      if (!value.trim() || !parent || parent.closest("button, a, script, style")) {
+        return NodeFilter.FILTER_REJECT;
+      }
+
+      autoLinkPattern.lastIndex = 0;
+      return autoLinkPattern.test(value) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    },
+  });
+  const textNodes = [];
+
+  while (walker.nextNode()) {
+    textNodes.push(walker.currentNode);
+  }
+
+  textNodes.forEach((node) => {
+    const value = node.nodeValue || "";
+    let lastIndex = 0;
+    let hasReplacement = false;
+    let match;
+    const fragment = document.createDocumentFragment();
+
+    autoLinkPattern.lastIndex = 0;
+
+    while ((match = autoLinkPattern.exec(value))) {
+      const matchedText = match[0];
+      const lookupLabel = termAliasLookup.get(normalizeTerm(matchedText));
+
+      if (!lookupLabel) {
+        continue;
+      }
+
+      hasReplacement = true;
+
+      if (match.index > lastIndex) {
+        fragment.appendChild(document.createTextNode(value.slice(lastIndex, match.index)));
+      }
+
+      fragment.appendChild(buildTermTriggerNode(lookupLabel, matchedText));
+      lastIndex = match.index + matchedText.length;
+    }
+
+    if (!hasReplacement) {
+      return;
+    }
+
+    if (lastIndex < value.length) {
+      fragment.appendChild(document.createTextNode(value.slice(lastIndex)));
+    }
+
+    node.parentNode.replaceChild(fragment, node);
+  });
+
+  return root.innerHTML;
+}
+
 function renderRichText(text) {
-  return String(text).replace(/\[\[(.+?)\]\]/g, (_, rawTerm) => {
+  const explicit = String(text).replace(/\[\[(.+?)\]\]/g, (_, rawTerm) => {
     const entry = termDictionary[normalizeTerm(rawTerm)];
     const visibleLabel = entry ? entry.display : rawTerm.trim();
     const lookupLabel = entry ? entry.label : rawTerm.trim();
-    return `<button class="term-trigger" type="button" data-term="${escapeAttr(lookupLabel)}">${visibleLabel}</button>`;
+    return buildTermTriggerMarkup(lookupLabel, visibleLabel);
   });
+
+  return autoLinkEconomicTerms(explicit);
 }
 
 function plainTextFromRich(text) {
@@ -1334,6 +1612,34 @@ const termDictionary = Object.fromEntries(
     },
   ]),
 );
+
+function getBaseKoreanLabel(display) {
+  const match = String(display).match(/^(.+?)\s*\(/);
+  return match ? match[1].trim() : String(display).trim();
+}
+
+function getTermAliases(entry) {
+  return Array.from(
+    new Set([entry.label, getBaseKoreanLabel(entry.display), ...(entry.aliases || [])].filter(Boolean)),
+  );
+}
+
+const autoLinkTermEntries = termEntries
+  .map((entry) => termDictionary[normalizeTerm(entry.label)])
+  .flatMap((entry) =>
+    getTermAliases(entry).map((alias) => ({
+      alias,
+      key: normalizeTerm(alias),
+      label: entry.label,
+    })),
+  )
+  .filter((item, index, list) => list.findIndex((candidate) => candidate.key === item.key) === index)
+  .sort((left, right) => right.alias.length - left.alias.length);
+
+const termAliasLookup = new Map(autoLinkTermEntries.map((item) => [item.key, item.label]));
+const autoLinkPattern = autoLinkTermEntries.length
+  ? new RegExp(autoLinkTermEntries.map((item) => escapeRegex(item.alias)).join("|"), "gi")
+  : null;
 
 const overview = {
   paragraphs: [
