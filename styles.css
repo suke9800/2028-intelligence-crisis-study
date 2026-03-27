@@ -207,6 +207,7 @@ section[id] {
 .hero-stat span,
 .panel-kicker,
 .section-label,
+.article-outline a span,
 .outline-group-label,
 .eyebrow {
   color: var(--accent);
@@ -357,6 +358,11 @@ section[id] {
   color: var(--muted);
   font-size: 0.92rem;
   font-weight: 700;
+}
+
+.article-outline a span {
+  display: block;
+  margin-bottom: 4px;
 }
 
 .article-outline a:hover,

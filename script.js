@@ -319,16 +319,36 @@ function getTermDisplay(label) {
 }
 
 function getFlatSections() {
+  let chapterNumber = 0;
+
   return articleGroups.flatMap((group) =>
-    group.sections.map((section) => ({
-      ...section,
-      groupId: group.id,
-      groupLabel: group.label,
-      groupTitle: group.title,
-      groupIntro: group.intro,
-      quizCategory: group.quizCategory,
-    })),
+    group.sections.map((section) => {
+      chapterNumber += 1;
+
+      return {
+        ...section,
+        groupId: group.id,
+        groupLabel: group.label,
+        groupTitle: group.title,
+        groupIntro: group.intro,
+        quizCategory: group.quizCategory,
+        chapterNumber,
+        chapterLabel: `${chapterNumber}부`,
+      };
+    }),
   );
+}
+
+function getGroupRangeLabel(groupId) {
+  const sections = getFlatSections().filter((section) => section.groupId === groupId);
+
+  if (!sections.length) {
+    return "";
+  }
+
+  const start = sections[0].chapterNumber;
+  const end = sections[sections.length - 1].chapterNumber;
+  return start === end ? `${start}부` : `${start}-${end}부`;
 }
 
 const refs = {
@@ -559,6 +579,14 @@ function renderOverview() {
 }
 
 function renderOutline() {
+  const numberedSections = getFlatSections();
+  const sectionsByGroup = new Map(
+    articleGroups.map((group) => [
+      group.id,
+      numberedSections.filter((section) => section.groupId === group.id),
+    ]),
+  );
+
   refs.articleOutline.innerHTML = `
     <p class="panel-kicker">Outline</p>
     <h3>원문 순서</h3>
@@ -567,11 +595,13 @@ function renderOutline() {
         .map(
           (group) => `
             <section class="outline-group">
-              <p class="outline-group-label">${group.label}</p>
-              ${group.sections
+              <p class="outline-group-label">${getGroupRangeLabel(group.id)}</p>
+              ${sectionsByGroup
+                .get(group.id)
                 .map(
                   (section) => `
                     <a href="#${section.id}" data-outline-link="${section.id}">
+                      <span>${section.chapterLabel}</span>
                       ${section.title}
                       <small>${section.originalTitle}</small>
                     </a>
@@ -587,22 +617,28 @@ function renderOutline() {
 }
 
 function renderArticle() {
+  const numberedSections = getFlatSections();
+  const sectionLookup = new Map(numberedSections.map((section) => [section.id, section]));
+
   refs.articleGroups.innerHTML = articleGroups
     .map(
       (group) => `
         <section class="reading-group" data-reveal>
           <div class="group-head">
-            <p class="eyebrow">${group.label}</p>
+            <p class="eyebrow">${getGroupRangeLabel(group.id)}</p>
             <h2>${group.title}</h2>
             <p>${group.intro}</p>
           </div>
           <div class="reading-stack">
             ${group.sections
               .map(
-                (section) => `
+                (rawSection) => {
+                  const section = sectionLookup.get(rawSection.id) || rawSection;
+
+                  return `
                   <article id="${section.id}" class="reading-section">
                     <div class="reading-head">
-                      <p class="section-label">${section.category} · ${section.originalTitle}</p>
+                      <p class="section-label">${section.chapterLabel} · ${section.category} · ${section.originalTitle}</p>
                       <h3>${section.title}</h3>
                       <p class="section-one-line">${renderRichText(section.oneLine)}</p>
                     </div>
@@ -636,7 +672,8 @@ function renderArticle() {
                         : ""
                     }
                   </article>
-                `,
+                `;
+                },
               )
               .join("")}
           </div>
