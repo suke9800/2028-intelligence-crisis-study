@@ -544,6 +544,7 @@ function getGroupRangeLabel(groupId) {
 }
 
 const refs = {
+  siteHeader: document.querySelector(".site-header"),
   overviewContent: document.querySelector("#overview-content"),
   articleOutline: document.querySelector("#article-outline"),
   articleGroups: document.querySelector("#article-groups"),
@@ -1478,11 +1479,23 @@ function closeMobileSheet() {
   syncBodyLock();
 }
 
-function openMobileSectionFromLink(sectionId) {
+function getStickyHeaderOffset() {
+  const headerHeight =
+    refs.siteHeader instanceof HTMLElement ? refs.siteHeader.getBoundingClientRect().height : 0;
+  const progressHeight =
+    refs.scrollBar instanceof HTMLElement ? refs.scrollBar.parentElement?.getBoundingClientRect().height || 0 : 0;
+  const breathingRoom = state.mobileMode ? 10 : 18;
+
+  return headerHeight + progressHeight + breathingRoom;
+}
+
+function navigateToSection(sectionId, { closeSheet = false } = {}) {
   const sectionCard = document.getElementById(sectionId);
 
   if (!(sectionCard instanceof HTMLElement)) {
-    closeMobileSheet();
+    if (closeSheet) {
+      closeMobileSheet();
+    }
     return;
   }
 
@@ -1496,18 +1509,24 @@ function openMobileSectionFromLink(sectionId) {
     sectionCard.open = true;
   }
 
-  closeMobileSheet();
+  if (closeSheet) {
+    closeMobileSheet();
+  }
 
   if (window.location.hash !== `#${sectionId}`) {
     window.history.replaceState(null, "", `#${sectionId}`);
   }
 
   window.requestAnimationFrame(() => {
-    sectionCard.scrollIntoView({
+    window.scrollTo({
+      top: Math.max(0, window.scrollY + sectionCard.getBoundingClientRect().top - getStickyHeaderOffset()),
       behavior: "smooth",
-      block: "start",
     });
   });
+}
+
+function openMobileSectionFromLink(sectionId) {
+  navigateToSection(sectionId, { closeSheet: true });
 }
 
 function applyMobileMode(enabled, { persist = true, focusSectionId = null } = {}) {
@@ -1814,9 +1833,11 @@ function bindEvents() {
     }
 
     const outlineLink = target.closest("[data-outline-link]");
-    if (outlineLink && state.mobileMode) {
+    if (outlineLink) {
       event.preventDefault();
-      openMobileSectionFromLink(outlineLink.getAttribute("data-outline-link"));
+      navigateToSection(outlineLink.getAttribute("data-outline-link"), {
+        closeSheet: state.mobileMode,
+      });
       return;
     }
 
