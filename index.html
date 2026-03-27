@@ -34,6 +34,9 @@
           <a href="#context">확장 이해</a>
           <a href="#quiz">퀴즈</a>
         </nav>
+        <button id="mobile-mode-toggle" class="settings-button mobile-mode-button" type="button" aria-pressed="false">
+          모바일 보기
+        </button>
         <button id="settings-toggle" class="settings-button" type="button" aria-label="설정 열기">
           Aa
         </button>
@@ -210,8 +213,42 @@
           <span>전체 글자 크기</span>
           <strong id="font-size-value">100%</strong>
         </label>
-        <input id="font-size-range" type="range" min="90" max="125" value="100" />
+        <input id="font-size-range" type="range" min="90" max="135" value="100" />
         <button id="font-size-reset" class="button tertiary" type="button">기본 크기로 되돌리기</button>
+      </div>
+    </div>
+
+    <div id="mobile-dock" class="mobile-dock" hidden>
+      <button id="mobile-outline-toggle" class="mobile-dock-button" type="button">목차</button>
+      <button id="mobile-font-toggle" class="mobile-dock-button" type="button">Aa</button>
+      <button id="mobile-mode-exit" class="mobile-dock-button primary" type="button">기본 보기</button>
+    </div>
+
+    <div id="mobile-sheet" class="mobile-sheet" hidden>
+      <div class="mobile-sheet-backdrop" data-close-mobile-sheet="true"></div>
+      <div class="mobile-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="mobile-sheet-title">
+        <button class="settings-close" id="mobile-sheet-close" type="button" aria-label="모바일 패널 닫기">×</button>
+        <p class="panel-kicker" id="mobile-sheet-kicker">Mobile Reading</p>
+        <h3 id="mobile-sheet-title">모바일 읽기</h3>
+
+        <section id="mobile-sheet-outline-panel" class="mobile-sheet-section" hidden>
+          <p class="mobile-sheet-copy">목차는 눌러서 이동하고, 본문은 접혀 있더라도 자동으로 펼쳐집니다.</p>
+          <div id="mobile-outline-list" class="mobile-outline-list"></div>
+        </section>
+
+        <section id="mobile-sheet-font-panel" class="mobile-sheet-section" hidden>
+          <p class="mobile-sheet-copy">모바일 읽기 모드 글자 크기</p>
+          <div class="mobile-font-actions">
+            <button id="mobile-font-decrease" class="mobile-step-button" type="button">A-</button>
+            <button id="mobile-font-increase" class="mobile-step-button" type="button">A+</button>
+          </div>
+          <label class="range-label" for="mobile-font-size-range">
+            <span>읽기 글자 크기</span>
+            <strong id="mobile-font-size-value">100%</strong>
+          </label>
+          <input id="mobile-font-size-range" type="range" min="90" max="135" value="100" />
+          <button id="mobile-font-reset" class="button tertiary" type="button">기본 크기로 되돌리기</button>
+        </section>
       </div>
     </div>
 

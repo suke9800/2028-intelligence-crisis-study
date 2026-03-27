@@ -574,12 +574,29 @@ const refs = {
   termEasy: document.querySelector("#term-easy"),
   termWhy: document.querySelector("#term-why"),
   termClose: document.querySelector("#term-close"),
+  mobileModeToggle: document.querySelector("#mobile-mode-toggle"),
   settingsToggle: document.querySelector("#settings-toggle"),
   settingsPanel: document.querySelector("#settings-panel"),
   settingsClose: document.querySelector("#settings-close"),
   fontSizeRange: document.querySelector("#font-size-range"),
   fontSizeValue: document.querySelector("#font-size-value"),
   fontSizeReset: document.querySelector("#font-size-reset"),
+  mobileDock: document.querySelector("#mobile-dock"),
+  mobileOutlineToggle: document.querySelector("#mobile-outline-toggle"),
+  mobileFontToggle: document.querySelector("#mobile-font-toggle"),
+  mobileModeExit: document.querySelector("#mobile-mode-exit"),
+  mobileSheet: document.querySelector("#mobile-sheet"),
+  mobileSheetClose: document.querySelector("#mobile-sheet-close"),
+  mobileSheetKicker: document.querySelector("#mobile-sheet-kicker"),
+  mobileSheetTitle: document.querySelector("#mobile-sheet-title"),
+  mobileSheetOutlinePanel: document.querySelector("#mobile-sheet-outline-panel"),
+  mobileSheetFontPanel: document.querySelector("#mobile-sheet-font-panel"),
+  mobileOutlineList: document.querySelector("#mobile-outline-list"),
+  mobileFontSizeRange: document.querySelector("#mobile-font-size-range"),
+  mobileFontSizeValue: document.querySelector("#mobile-font-size-value"),
+  mobileFontDecrease: document.querySelector("#mobile-font-decrease"),
+  mobileFontIncrease: document.querySelector("#mobile-font-increase"),
+  mobileFontReset: document.querySelector("#mobile-font-reset"),
   scrollBar: document.querySelector("#scroll-progress-bar"),
 };
 
@@ -595,7 +612,24 @@ const state = {
     questions: [],
     answers: {},
   },
+  mobileMode: false,
+  mobileSheet: null,
 };
+
+const FONT_SCALE_STORAGE_KEY = "gic-font-scale";
+const MOBILE_MODE_STORAGE_KEY = "gic-mobile-reading-mode";
+const MIN_FONT_SCALE = 90;
+const MAX_FONT_SCALE = 135;
+
+function clampNumber(value, min, max) {
+  const numeric = Number(value);
+
+  if (Number.isNaN(numeric)) {
+    return min;
+  }
+
+  return Math.min(max, Math.max(min, numeric));
+}
 
 function escapeAttr(value) {
   return String(value)
@@ -856,7 +890,7 @@ function renderOverview() {
   `;
 }
 
-function renderOutline() {
+function getOutlineMarkup() {
   const numberedSections = getFlatSections();
   const sectionsByGroup = new Map(
     articleGroups.map((group) => [
@@ -865,38 +899,126 @@ function renderOutline() {
     ]),
   );
 
+  return articleGroups
+    .map(
+      (group) => `
+        <section class="outline-group">
+          <p class="outline-group-label">${getGroupRangeLabel(group.id)}</p>
+          ${sectionsByGroup
+            .get(group.id)
+            .map(
+              (section) => `
+                <a href="#${section.id}" data-outline-link="${section.id}">
+                  <span>${section.chapterLabel}</span>
+                  ${section.title}
+                  <small>${section.originalTitle}</small>
+                </a>
+              `,
+            )
+            .join("")}
+        </section>
+      `,
+    )
+    .join("");
+}
+
+function renderOutline() {
+  const outlineMarkup = getOutlineMarkup();
+
   refs.articleOutline.innerHTML = `
     <p class="panel-kicker">Outline</p>
     <h3>원문 순서</h3>
     <nav>
-      ${articleGroups
-        .map(
-          (group) => `
-            <section class="outline-group">
-              <p class="outline-group-label">${getGroupRangeLabel(group.id)}</p>
-              ${sectionsByGroup
-                .get(group.id)
-                .map(
-                  (section) => `
-                    <a href="#${section.id}" data-outline-link="${section.id}">
-                      <span>${section.chapterLabel}</span>
-                      ${section.title}
-                      <small>${section.originalTitle}</small>
-                    </a>
-                  `,
-                )
-                .join("")}
-            </section>
-          `,
-        )
-        .join("")}
+      ${outlineMarkup}
     </nav>
+  `;
+
+  refs.mobileOutlineList.innerHTML = `
+    <nav>
+      ${outlineMarkup}
+    </nav>
+  `;
+}
+
+function renderSectionContent(section) {
+  return `
+    <p class="section-one-line">${renderRichText(section.oneLine)}</p>
+    <div class="reading-prose">
+      ${section.paragraphs.map((paragraph) => `<p>${renderRichText(paragraph)}</p>`).join("")}
+    </div>
+    <div class="reading-expand">
+      <p><strong>쉽게 말해:</strong> ${renderRichText(section.easy)}</p>
+      <p><strong>왜 중요한가:</strong> ${renderRichText(section.impact)}</p>
+      <p><strong>헷갈리기 쉬운 점:</strong> ${renderRichText(section.trap)}</p>
+      <p><strong>조금 더 확장해서:</strong> ${renderRichText(section.expand)}</p>
+    </div>
+    <div class="takeaways">
+      <strong>핵심만 다시 잡기</strong>
+      <ul>
+        ${section.takeaways.map((item) => `<li>${renderRichText(item)}</li>`).join("")}
+      </ul>
+    </div>
+    ${
+      sectionDetailNotes[section.id]
+        ? `
+      <div class="takeaways">
+        <strong>원문에서 더 잡아둘 디테일</strong>
+        <ul>
+          ${sectionDetailNotes[section.id].map((item) => `<li>${renderRichText(item)}</li>`).join("")}
+        </ul>
+      </div>
+    `
+        : ""
+    }
   `;
 }
 
 function renderArticle() {
   const numberedSections = getFlatSections();
   const sectionLookup = new Map(numberedSections.map((section) => [section.id, section]));
+
+  if (state.mobileMode) {
+    refs.articleGroups.innerHTML = articleGroups
+      .map((group, groupIndex) => {
+        const groupSections = group.sections.map((rawSection) => sectionLookup.get(rawSection.id) || rawSection);
+
+        return `
+          <details class="mobile-reading-card reading-group" data-reveal ${groupIndex === 0 ? "open" : ""}>
+            <summary class="mobile-card-summary">
+              <span class="eyebrow">${getGroupRangeLabel(group.id)}</span>
+              <strong>${group.title}</strong>
+              <small>${groupSections.length}개 섹션 · 눌러서 펼치기</small>
+            </summary>
+            <div class="mobile-card-body">
+              <p class="mobile-card-intro">${renderRichText(group.intro)}</p>
+              <div class="mobile-section-list">
+                ${groupSections
+                  .map(
+                    (section, sectionIndex) => `
+                      <details id="${section.id}" class="mobile-section-card" ${
+                        groupIndex === 0 && sectionIndex === 0 ? "open" : ""
+                      }>
+                        <summary class="mobile-section-summary">
+                          <span class="section-label">${section.chapterLabel} · ${section.category}</span>
+                          <strong>${section.title}</strong>
+                          <small>${section.originalTitle}</small>
+                        </summary>
+                        <div class="mobile-section-body">
+                          ${renderSectionContent(section)}
+                        </div>
+                      </details>
+                    `,
+                  )
+                  .join("")}
+              </div>
+            </div>
+          </details>
+        `;
+      })
+      .join("");
+
+    return;
+  }
 
   refs.articleGroups.innerHTML = articleGroups
     .map(
@@ -918,37 +1040,8 @@ function renderArticle() {
                     <div class="reading-head">
                       <p class="section-label">${section.chapterLabel} · ${section.category} · ${section.originalTitle}</p>
                       <h3>${section.title}</h3>
-                      <p class="section-one-line">${renderRichText(section.oneLine)}</p>
                     </div>
-                    <div class="reading-prose">
-                      ${section.paragraphs.map((paragraph) => `<p>${renderRichText(paragraph)}</p>`).join("")}
-                    </div>
-                    <div class="reading-expand">
-                      <p><strong>쉽게 말해:</strong> ${renderRichText(section.easy)}</p>
-                      <p><strong>왜 중요한가:</strong> ${renderRichText(section.impact)}</p>
-                      <p><strong>헷갈리기 쉬운 점:</strong> ${renderRichText(section.trap)}</p>
-                      <p><strong>조금 더 확장해서:</strong> ${renderRichText(section.expand)}</p>
-                    </div>
-                    <div class="takeaways">
-                      <strong>핵심만 다시 잡기</strong>
-                      <ul>
-                        ${section.takeaways.map((item) => `<li>${renderRichText(item)}</li>`).join("")}
-                      </ul>
-                    </div>
-                    ${
-                      sectionDetailNotes[section.id]
-                        ? `
-                      <div class="takeaways">
-                        <strong>원문에서 더 잡아둘 디테일</strong>
-                        <ul>
-                          ${sectionDetailNotes[section.id]
-                            .map((item) => `<li>${renderRichText(item)}</li>`)
-                            .join("")}
-                        </ul>
-                      </div>
-                    `
-                        : ""
-                    }
+                    ${renderSectionContent(section)}
                   </article>
                 `;
                 },
@@ -962,6 +1055,36 @@ function renderArticle() {
 }
 
 function renderContext() {
+  if (state.mobileMode) {
+    refs.contextGroups.innerHTML = contextEssays
+      .map(
+        (essay, index) => `
+          <details class="mobile-reading-card reading-group" data-reveal ${index === 0 ? "open" : ""}>
+            <summary class="mobile-card-summary">
+              <span class="eyebrow">${essay.label}</span>
+              <strong>${essay.title}</strong>
+              <small>눌러서 펼치기</small>
+            </summary>
+            <div class="mobile-card-body">
+              <p class="mobile-card-intro">${renderRichText(essay.intro)}</p>
+              <div class="reading-prose">
+                ${essay.paragraphs.map((paragraph) => `<p>${renderRichText(paragraph)}</p>`).join("")}
+              </div>
+              <div class="takeaways">
+                <strong>이 장을 읽고 남겨둘 관찰 포인트</strong>
+                <ul>
+                  ${essay.takeaways.map((item) => `<li>${renderRichText(item)}</li>`).join("")}
+                </ul>
+              </div>
+            </div>
+          </details>
+        `,
+      )
+      .join("");
+
+    return;
+  }
+
   refs.contextGroups.innerHTML = contextEssays
     .map(
       (essay) => `
@@ -1277,6 +1400,131 @@ function activateMode(mode) {
   refs.examPanel.classList.toggle("active", mode === "exam");
 }
 
+function syncBodyLock() {
+  const shouldLock =
+    !refs.termModal.hidden || !refs.settingsPanel.hidden || !refs.mobileSheet.hidden;
+  document.body.style.overflow = shouldLock ? "hidden" : "";
+}
+
+function refreshReadingLayout() {
+  renderOutline();
+  renderArticle();
+  renderContext();
+  setupRevealObserver();
+  setupOutlineHighlight();
+  setupDraggableOutline();
+}
+
+function updateMobileModeUI() {
+  document.body.classList.toggle("mobile-reading-mode", state.mobileMode);
+  refs.mobileModeToggle.classList.toggle("active", state.mobileMode);
+  refs.mobileModeToggle.setAttribute("aria-pressed", String(state.mobileMode));
+  refs.mobileModeToggle.textContent = state.mobileMode ? "기본 보기" : "모바일 보기";
+  refs.mobileDock.hidden = !state.mobileMode;
+}
+
+function openMobileSheet(panel) {
+  if (!state.mobileMode) {
+    return;
+  }
+
+  state.mobileSheet = panel;
+  refs.mobileSheet.hidden = false;
+  refs.mobileSheetOutlinePanel.hidden = panel !== "outline";
+  refs.mobileSheetFontPanel.hidden = panel !== "font";
+
+  if (panel === "outline") {
+    refs.mobileSheetKicker.textContent = "Mobile Reading";
+    refs.mobileSheetTitle.textContent = "목록";
+  } else {
+    refs.mobileSheetKicker.textContent = "Reading Size";
+    refs.mobileSheetTitle.textContent = "글자 크기";
+  }
+
+  syncBodyLock();
+}
+
+function closeMobileSheet() {
+  state.mobileSheet = null;
+  refs.mobileSheet.hidden = true;
+  refs.mobileSheetOutlinePanel.hidden = true;
+  refs.mobileSheetFontPanel.hidden = true;
+  syncBodyLock();
+}
+
+function openMobileSectionFromLink(sectionId) {
+  const sectionCard = document.getElementById(sectionId);
+
+  if (!(sectionCard instanceof HTMLElement)) {
+    closeMobileSheet();
+    return;
+  }
+
+  const parentGroup = sectionCard.closest(".mobile-reading-card");
+
+  if (parentGroup instanceof HTMLDetailsElement) {
+    parentGroup.open = true;
+  }
+
+  if (sectionCard instanceof HTMLDetailsElement) {
+    sectionCard.open = true;
+  }
+
+  closeMobileSheet();
+
+  if (window.location.hash !== `#${sectionId}`) {
+    window.history.replaceState(null, "", `#${sectionId}`);
+  }
+
+  window.requestAnimationFrame(() => {
+    sectionCard.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  });
+}
+
+function applyMobileMode(enabled, { persist = true, focusSectionId = null } = {}) {
+  const nextMode = Boolean(enabled);
+  const previousScroll = window.scrollY;
+
+  if (state.mobileMode === nextMode) {
+    if (focusSectionId && state.mobileMode) {
+      openMobileSectionFromLink(focusSectionId);
+    }
+    return;
+  }
+
+  state.mobileMode = nextMode;
+
+  if (!nextMode) {
+    closeMobileSheet();
+  }
+
+  updateMobileModeUI();
+  refreshReadingLayout();
+
+  if (persist) {
+    window.localStorage.setItem(MOBILE_MODE_STORAGE_KEY, nextMode ? "true" : "false");
+  }
+
+  window.requestAnimationFrame(() => {
+    window.scrollTo({
+      top: previousScroll,
+      behavior: "auto",
+    });
+
+    if (focusSectionId && nextMode) {
+      openMobileSectionFromLink(focusSectionId);
+    }
+  });
+}
+
+function restoreMobileMode() {
+  state.mobileMode = window.localStorage.getItem(MOBILE_MODE_STORAGE_KEY) === "true";
+  updateMobileModeUI();
+}
+
 function openTerm(termLabel) {
   const entry = termDictionary[normalizeTerm(termLabel)];
 
@@ -1289,42 +1537,43 @@ function openTerm(termLabel) {
   refs.termEasy.textContent = `쉽게 말해: ${entry.easy}`;
   refs.termWhy.textContent = `이 글에서 왜 중요한가: ${entry.why}`;
   refs.termModal.hidden = false;
-  document.body.style.overflow = "hidden";
+  syncBodyLock();
 }
 
 function closeTerm() {
   refs.termModal.hidden = true;
-
-  if (refs.settingsPanel.hidden) {
-    document.body.style.overflow = "";
-  }
+  syncBodyLock();
 }
 
 function applyFontScale(value) {
-  const numericValue = Number(value);
+  const numericValue = clampNumber(value, MIN_FONT_SCALE, MAX_FONT_SCALE);
   const scale = numericValue / 100;
   document.documentElement.style.setProperty("--font-scale", scale.toFixed(2));
   refs.fontSizeRange.value = String(numericValue);
+  refs.mobileFontSizeRange.value = String(numericValue);
   refs.fontSizeValue.textContent = `${numericValue}%`;
-  window.localStorage.setItem("gic-font-scale", String(numericValue));
+  refs.mobileFontSizeValue.textContent = `${numericValue}%`;
+  window.localStorage.setItem(FONT_SCALE_STORAGE_KEY, String(numericValue));
 }
 
 function restoreFontScale() {
-  const storedValue = Number(window.localStorage.getItem("gic-font-scale")) || 100;
+  const storedValue = clampNumber(
+    window.localStorage.getItem(FONT_SCALE_STORAGE_KEY) || 100,
+    MIN_FONT_SCALE,
+    MAX_FONT_SCALE,
+  );
   applyFontScale(storedValue);
 }
 
 function openSettings() {
+  closeMobileSheet();
   refs.settingsPanel.hidden = false;
-  document.body.style.overflow = "hidden";
+  syncBodyLock();
 }
 
 function closeSettings() {
   refs.settingsPanel.hidden = true;
-
-  if (refs.termModal.hidden) {
-    document.body.style.overflow = "";
-  }
+  syncBodyLock();
 }
 
 function setupRevealObserver() {
@@ -1392,9 +1641,11 @@ function setupScrollProgress() {
 function setupDraggableOutline() {
   const outline = refs.articleOutline;
 
-  if (!outline) {
+  if (!outline || outline.dataset.dragScrollBound === "true") {
     return;
   }
+
+  outline.dataset.dragScrollBound = "true";
 
   let pointerId = null;
   let startX = 0;
@@ -1522,6 +1773,13 @@ function bindEvents() {
       return;
     }
 
+    const outlineLink = target.closest("[data-outline-link]");
+    if (outlineLink && state.mobileMode) {
+      event.preventDefault();
+      openMobileSectionFromLink(outlineLink.getAttribute("data-outline-link"));
+      return;
+    }
+
     if (target.closest("[data-close-term='true']")) {
       closeTerm();
       return;
@@ -1529,6 +1787,11 @@ function bindEvents() {
 
     if (target.closest("[data-close-settings='true']")) {
       closeSettings();
+      return;
+    }
+
+    if (target.closest("[data-close-mobile-sheet='true']")) {
+      closeMobileSheet();
       return;
     }
 
@@ -1564,6 +1827,11 @@ function bindEvents() {
   });
 
   refs.examSubmit.addEventListener("click", submitExam);
+  refs.mobileModeToggle.addEventListener("click", () => applyMobileMode(!state.mobileMode));
+  refs.mobileModeExit.addEventListener("click", () => applyMobileMode(false));
+  refs.mobileOutlineToggle.addEventListener("click", () => openMobileSheet("outline"));
+  refs.mobileFontToggle.addEventListener("click", () => openMobileSheet("font"));
+  refs.mobileSheetClose.addEventListener("click", closeMobileSheet);
   refs.settingsToggle.addEventListener("click", openSettings);
   refs.settingsClose.addEventListener("click", closeSettings);
   refs.termClose.addEventListener("click", closeTerm);
@@ -1572,10 +1840,25 @@ function bindEvents() {
     applyFontScale(nextValue);
   });
   refs.fontSizeReset.addEventListener("click", () => applyFontScale(100));
+  refs.mobileFontSizeRange.addEventListener("input", (event) => {
+    const nextValue = event.target instanceof HTMLInputElement ? event.target.value : "100";
+    applyFontScale(nextValue);
+  });
+  refs.mobileFontDecrease.addEventListener("click", () =>
+    applyFontScale(Number(refs.mobileFontSizeRange.value) - 5),
+  );
+  refs.mobileFontIncrease.addEventListener("click", () =>
+    applyFontScale(Number(refs.mobileFontSizeRange.value) + 5),
+  );
+  refs.mobileFontReset.addEventListener("click", () => applyFontScale(100));
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") {
       return;
+    }
+
+    if (!refs.mobileSheet.hidden) {
+      closeMobileSheet();
     }
 
     if (!refs.termModal.hidden) {
@@ -1590,17 +1873,13 @@ function bindEvents() {
 
 function init() {
   renderOverview();
-  renderOutline();
-  renderArticle();
-  renderContext();
+  restoreMobileMode();
+  refreshReadingLayout();
   renderCategoryFilters();
   renderStudyQuestions();
   restoreFontScale();
   bindEvents();
-  setupRevealObserver();
-  setupOutlineHighlight();
   setupScrollProgress();
-  setupDraggableOutline();
 }
 
 const termDictionary = Object.fromEntries(
