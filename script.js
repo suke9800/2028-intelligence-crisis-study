@@ -436,7 +436,7 @@ function buildChoices(correct, pool, seed) {
   return rotate(combined, hashString(`${seed}-choices`));
 }
 
-function makeQuestion({ id, prompt, answer, distractors, explanation, hint, category, source }) {
+function makeQuestion({ id, prompt, answer, distractors, explanation, hint, category, source, kind }) {
   const choices = buildChoices(answer, distractors, id);
 
   return {
@@ -448,94 +448,69 @@ function makeQuestion({ id, prompt, answer, distractors, explanation, hint, cate
     hint,
     category,
     source,
+    kind,
   };
 }
 
-function buildSectionQuestions(section, sections) {
-  const otherSections = sections.filter((item) => item.id !== section.id);
-  const groupOptions = Array.from(new Set(sections.map((item) => item.quizCategory))).filter(
-    (category) => category !== section.quizCategory,
+function buildSectionQuestions(section) {
+  const blueprints = sectionQuestionBlueprints[section.id] || [];
+
+  return blueprints.map((blueprint) =>
+    makeQuestion({
+      id: `${section.id}-${blueprint.idSuffix}`,
+      prompt: blueprint.prompt,
+      answer: blueprint.answer,
+      distractors: blueprint.distractors,
+      explanation: `${blueprint.explanation} 이 파트의 중심 문장은 ${plainTextFromRich(section.oneLine)}입니다.`,
+      hint: blueprint.hint,
+      category: section.quizCategory,
+      source: section.title,
+      kind: "section",
+    }),
+  );
+}
+
+function getPeerTermEntries(entry, entries) {
+  const clusterLabels = termClusterLookup[normalizeTerm(entry.label)] || [];
+  const clusterSet = new Set(clusterLabels.map((label) => normalizeTerm(label)));
+  const sameCluster = entries.filter(
+    (item) => item.label !== entry.label && clusterSet.has(normalizeTerm(item.label)),
   );
 
-  return [
-    makeQuestion({
-      id: `${section.id}-core`,
-      prompt: `원문 <strong>${section.originalTitle}</strong> 파트의 핵심을 가장 쉽게 풀어쓴 것은 무엇인가요?`,
-      answer: section.easy,
-      distractors: otherSections.map((item) => item.easy),
-      explanation: `${section.title} 파트는 ${plainTextFromRich(section.oneLine)}를 가장 쉽게 이해시키는 역할을 합니다. ${plainTextFromRich(section.impact)}`,
-      hint: section.oneLine,
-      category: section.quizCategory,
-      source: section.title,
-    }),
-    makeQuestion({
-      id: `${section.id}-impact`,
-      prompt: `${section.title} 파트가 특히 경고하는 직접 효과는 무엇인가요?`,
-      answer: section.impact,
-      distractors: otherSections.map((item) => item.impact),
-      explanation: `${section.title}의 초점은 ${plainTextFromRich(section.impact)}입니다. 이 파트는 ${plainTextFromRich(section.easy)}`,
-      hint: section.easy,
-      category: section.quizCategory,
-      source: section.title,
-    }),
-    makeQuestion({
-      id: `${section.id}-trap`,
-      prompt: `${section.title} 파트를 읽을 때 피해야 할 오해는 무엇인가요?`,
-      answer: section.trap,
-      distractors: otherSections.map((item) => item.trap),
-      explanation: `${section.title}는 ${plainTextFromRich(section.trap)}는 점을 분명히 해 둡니다. 이 오해를 빼야 나머지 논리가 연결됩니다.`,
-      hint: `핵심은 ${plainTextFromRich(section.oneLine)}`,
-      category: section.quizCategory,
-      source: section.title,
-    }),
-    makeQuestion({
-      id: `${section.id}-group`,
-      prompt: `${section.title} 파트가 속한 큰 묶음은 무엇인가요?`,
-      answer: section.quizCategory,
-      distractors: groupOptions,
-      explanation: `${section.title}는 ${section.quizCategory} 묶음에 속합니다. 이 묶음은 ${section.groupIntro}`,
-      hint: section.groupIntro,
-      category: section.quizCategory,
-      source: section.title,
-    }),
-    makeQuestion({
-      id: `${section.id}-identify`,
-      prompt: `다음 한 줄 요약과 가장 가까운 파트 제목을 고르세요. <strong>${plainTextFromRich(section.oneLine)}</strong>`,
-      answer: section.title,
-      distractors: otherSections.map((item) => item.title),
-      explanation: `정답은 ${section.title}입니다. 원문 제목은 ${section.originalTitle}이고, 이 파트는 ${plainTextFromRich(section.easy)}`,
-      hint: section.impact,
-      category: section.quizCategory,
-      source: section.title,
-    }),
-  ];
+  if (sameCluster.length >= 3) {
+    return sameCluster;
+  }
+
+  return entries.filter((item) => item.label !== entry.label);
 }
 
 function buildTermQuestions(entry, entries) {
-  const otherEntries = entries.filter((item) => item.label !== entry.label);
   const slug = entry.label.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   const display = getTermDisplay(entry.label);
+  const peerEntries = getPeerTermEntries(entry, entries);
 
   return [
     makeQuestion({
-      id: `term-${slug}-meaning`,
-      prompt: `본문 문맥에서 [[${entry.label}]]은 무엇을 뜻하나요?`,
-      answer: entry.summary,
-      distractors: otherEntries.map((item) => item.summary),
-      explanation: `${display}은 ${entry.summary}입니다. 쉽게 말하면 ${entry.easy} 원문에서는 ${entry.why}`,
-      hint: entry.easy,
+      id: `term-${slug}-scenario`,
+      prompt: `다음 설명이 가리키는 원문 용어를 고르세요. <strong>${plainTextFromRich(entry.easy)}</strong> 이 개념은 글 전체에서 ${plainTextFromRich(entry.why)}`,
+      answer: display,
+      distractors: peerEntries.map((item) => getTermDisplay(item.label)),
+      explanation: `정답은 [[${entry.label}]]입니다. ${entry.summary} 쉽게 말하면 ${entry.easy} 이 글에서는 ${entry.why}`,
+      hint: `사전 뜻보다 이 용어가 원문 전체의 어느 고리를 설명하는지 떠올려 보세요. ${entry.summary}`,
       category: "용어",
       source: display,
+      kind: "term",
     }),
     makeQuestion({
-      id: `term-${slug}-label`,
-      prompt: `다음 설명에 맞는 원문 용어를 고르세요. <strong>${entry.easy}</strong>`,
-      answer: display,
-      distractors: otherEntries.map((item) => getTermDisplay(item.label)),
-      explanation: `정답은 [[${entry.label}]]입니다. ${entry.summary} 원문에서는 ${entry.why}`,
-      hint: entry.summary,
+      id: `term-${slug}-importance`,
+      prompt: `원문에서 [[${entry.label}]]이 중요한 이유를 가장 정확히 고르세요.`,
+      answer: entry.why,
+      distractors: peerEntries.map((item) => item.why),
+      explanation: `[[${entry.label}]]이 중요한 이유는 ${entry.why} 이 용어 자체의 뜻은 ${entry.summary}이고, 본문에서는 ${entry.easy}`,
+      hint: `뜻풀이만 외우지 말고, 이 단어가 어떤 경제 고리를 연결하는지 생각해 보세요. ${entry.easy}`,
       category: "용어",
       source: display,
+      kind: "term",
     }),
   ];
 }
@@ -543,9 +518,25 @@ function buildTermQuestions(entry, entries) {
 function getQuestionBank() {
   const sections = getFlatSections();
   return [
-    ...sections.flatMap((section) => buildSectionQuestions(section, sections)),
+    ...sections.flatMap((section) => buildSectionQuestions(section)),
     ...termEntries.flatMap((entry) => buildTermQuestions(entry, termEntries)),
   ];
+}
+
+function buildExamQuestions() {
+  const bank = getQuestionBank();
+  const sectionQuestions = bank.filter((question) => question.kind === "section");
+  const termQuestions = bank.filter((question) => question.kind === "term");
+  const guaranteedSectionSources = Array.from(new Set(sectionQuestions.map((question) => question.source)));
+  const guaranteedSections = guaranteedSectionSources.map((source) => {
+    const candidates = sectionQuestions.filter((question) => question.source === source);
+    return shuffled(candidates)[0];
+  });
+  const usedIds = new Set(guaranteedSections.map((question) => question.id));
+  const extraSections = shuffled(sectionQuestions.filter((question) => !usedIds.has(question.id))).slice(0, 5);
+  const termSet = shuffled(termQuestions).slice(0, 5);
+
+  return shuffled([...guaranteedSections, ...extraSections, ...termSet]).slice(0, 20);
 }
 
 function getQuizCategories() {
@@ -894,7 +885,7 @@ function startExam() {
   state.exam = {
     active: true,
     index: 0,
-    questions: shuffled(getQuestionBank()).slice(0, 20),
+    questions: buildExamQuestions(),
     answers: {},
   };
 
@@ -1702,5 +1693,462 @@ const contextEssays = [
     ],
   },
 ];
+
+const sectionQuestionBlueprints = {
+  preface: [
+    {
+      idSuffix: "thesis",
+      prompt: "Preface를 가장 정확하게 읽은 설명은 무엇인가요?",
+      answer: "AI 낙관이 맞더라도 시장과 경제에는 오히려 약세 충격이 될 수 있는 경우를 점검하는 사고실험이다.",
+      distractors: [
+        "AI 성능이 기대에 못 미쳐 기술주 거품만 조정되는 시나리오를 예측하는 글이다.",
+        "정부 규제 강화가 혁신을 멈추게 하는 정치 드라마를 중심에 둔 글이다.",
+        "AI 윤리 문제를 도덕적으로 비판하기 위한 선언문에 가깝다.",
+      ],
+      hint: "핵심은 AI 실패가 아니라 AI 성공이 사람 중심 경제와 충돌할 수 있다는 점입니다.",
+      explanation:
+        "Preface는 [[left-tail risk]]를 점검하자는 도입부입니다. 가장 가능성 높은 기본 시나리오를 찍기보다, 준비가 덜 된 충격을 먼저 상상해 보자는 태도로 읽어야 합니다.",
+    },
+    {
+      idSuffix: "memo-form",
+      prompt: "글을 2028년 메모처럼 꾸민 이유를 가장 잘 설명한 것은 무엇인가요?",
+      answer: "미래에서 뒤돌아보는 형식을 써서, 위기가 어느 단계에서 어떻게 번졌는지 연쇄적으로 복기하게 만들기 위해서다.",
+      distractors: [
+        "숫자와 사건을 확정된 예언처럼 보이게 해 독자를 압도하기 위해서다.",
+        "실제 데이터가 부족하다는 약점을 문학적 장치로 감추기 위해서다.",
+        "정책 처방만 따로 떼어 강조하기 위한 편집상의 장난에 가깝다.",
+      ],
+      hint: "이 형식은 '이미 벌어진 일을 돌아보는 메모'처럼 읽히게 만듭니다.",
+      explanation:
+        "미래 메모 형식은 원인을 시간순으로 역추적하게 해 줍니다. 그래서 독자는 사건 하나보다, 작은 균열이 어떻게 시스템 위기로 커졌는지를 따라가게 됩니다.",
+    },
+    {
+      idSuffix: "reader-posture",
+      prompt: "Preface가 독자에게 요구하는 읽기 태도로 가장 적절한 것은 무엇인가요?",
+      answer: "가장 평범한 전망보다, 준비가 부족한 큰 충격을 먼저 가정해 보며 고리를 따라 읽는 태도다.",
+      distractors: [
+        "정확한 숫자 예측이 맞는지만 확인하며 통계표처럼 읽는 태도다.",
+        "어차피 비관론이라고 전제하고 반박 포인트만 찾는 태도다.",
+        "기술 섹터 이야기로 한정하고 거시경제 연결은 의도적으로 무시하는 태도다.",
+      ],
+      hint: "도입부는 확률이 가장 높은 미래보다, 놓치기 쉬운 충격을 보자고 말합니다.",
+      explanation:
+        "이 글은 결론 맞히기보다 구조 읽기가 중요합니다. 어떤 충격이 어디에서 시작해 어디로 번지는지 차근차근 따라가야 나머지 장들이 연결됩니다.",
+    },
+  ],
+  "macro-memo": [
+    {
+      idSuffix: "ghost-gdp",
+      prompt: "Macro Memo의 핵심 역설을 가장 정확하게 고른 것은 무엇인가요?",
+      answer: "생산성과 기업 이익은 좋아 보이는데 임금과 소비가 약해져 [[Ghost GDP]]가 생기는 상황이다.",
+      distractors: [
+        "생산성이 무너져 기업 이익과 고용이 동시에 급락하는 전형적 침체다.",
+        "AI 이익이 임금으로 널리 퍼져 소비까지 함께 강해지는 확장 국면이다.",
+        "AI 투자 감소가 먼저 나오고 그 결과 실업률이 뒤늦게 높아지는 상황이다.",
+      ],
+      hint: "표면의 생산성 수치와 실제 생활경제의 체감이 서로 어긋나는 장면입니다.",
+      explanation:
+        "원문은 숫자상 산출과 실제 순환이 분리되는 순간을 [[Ghost GDP]]로 묘사합니다. 기계가 생산은 늘려도 사람처럼 소비하지 않기 때문에 생기는 역설입니다.",
+    },
+    {
+      idSuffix: "consumer-base",
+      prompt: "원문이 '사람 중심 소비경제가 GDP의 큰 축'이라고 강조하는 이유는 무엇인가요?",
+      answer: "사람이 하던 일을 기계가 대신해도, 기계는 선택 소비를 하지 않기 때문에 경제 순환의 빈자리가 남기 때문이다.",
+      distractors: [
+        "기계가 소비를 더 공격적으로 늘려 총수요를 자동으로 키워 주기 때문이다.",
+        "GDP에서 소비 비중이 낮기 때문에 생산만 늘면 문제가 거의 없기 때문이다.",
+        "정부 이전지출이 소비를 완전히 대체하므로 민간 지출 약화는 중요하지 않기 때문이다.",
+      ],
+      hint: "원문은 '기계가 discretionary goods를 얼마나 사느냐'는 질문을 던집니다.",
+      explanation:
+        "이 장의 요지는 생산 수치만으로는 생활경제를 유지할 수 없다는 점입니다. 소비의 주체가 사라지면 [[velocity of money]]가 약해지고, 체감 경기는 빠르게 식습니다.",
+    },
+    {
+      idSuffix: "mortgage-link",
+      prompt: "Macro Memo가 미국 주택담보대출 시장을 끌고 들어오는 이유는 무엇인가요?",
+      answer: "사무직 소득이 미국 [[prime mortgage]]의 상환 기반이라, 소득 약화가 금융 안정성 문제로 번질 수 있기 때문이다.",
+      distractors: [
+        "모든 주택대출이 처음부터 부실하게 발행되었기 때문에 구조가 이미 무너져 있기 때문이다.",
+        "주택 가격 상승이 지나치게 빨라 소비 호황을 더 자극하고 있기 때문이다.",
+        "주택담보대출은 실물경제와 거의 분리되어 있어 충격 흡수 장치가 되기 때문이다.",
+      ],
+      hint: "여기서는 '대출의 출발점'보다 '차주의 미래 소득'이 중요합니다.",
+      explanation:
+        "원문은 금융 불안이 갑자기 하늘에서 떨어진다고 보지 않습니다. 사무직 소득 기반이 약해지면 가장 큰 가계 금융 구조인 주택담보대출이 함께 흔들린다는 연결을 보여 줍니다.",
+    },
+  ],
+  "how-it-started": [
+    {
+      idSuffix: "pricing-power",
+      prompt: "How It Started에서 SaaS 업체의 가격 협상력이 흔들리기 시작한 직접 계기는 무엇인가요?",
+      answer: "고객이 내부 팀과 AI로 비슷한 기능을 직접 만들 수 있다는 인식이 생기며, 갱신 협상이 달라졌기 때문이다.",
+      distractors: [
+        "클라우드 사용료가 갑자기 급등해 SaaS 업체가 먼저 가격을 내릴 수밖에 없었기 때문이다.",
+        "오픈소스 모델이 금지되면서 모든 기업이 동일한 공급업체만 써야 했기 때문이다.",
+        "규제상 외부 소프트웨어 사용이 막혀 기업이 울며 겨자 먹기로 계약을 줄였기 때문이다.",
+      ],
+      hint: "원문은 '우리가 그냥 직접 만들면 안 되나?'라는 질문이 협상을 뒤집었다고 봅니다.",
+      explanation:
+        "핵심은 완벽한 대체가 아니라 대체 가능성의 등장입니다. 내부 구축이 진짜 옵션이 되는 순간, 기존 SaaS의 가격표와 갱신 논리는 바로 약해집니다.",
+    },
+    {
+      idSuffix: "systems-of-record",
+      prompt: "원문이 [[systems of record]]마저 완전한 안전지대가 아니라고 보는 이유는 무엇인가요?",
+      answer: "고객의 인원 감축이 좌석 수와 사용량 감소로 이어져, 견고해 보이던 반복 매출도 같이 깎일 수 있기 때문이다.",
+      distractors: [
+        "기록 시스템은 기능이 단순해서 오히려 신규 경쟁자가 가격을 올리기 쉬웠기 때문이다.",
+        "기록 시스템은 브랜드 가치만으로 유지되므로 실제 사용량 변화와 거의 무관하기 때문이다.",
+        "기록 시스템은 보안 규제가 강해질수록 고객당 좌석 수가 자동으로 늘기 때문이다.",
+      ],
+      hint: "여기서 중요한 것은 제품 종류보다 과금 구조입니다.",
+      explanation:
+        "원문은 좌석 기반 매출의 기계적 약점을 집습니다. 고객이 AI로 15% 감원하면, 공급업체 매출도 매우 직접적으로 15% 줄 수 있다는 식입니다.",
+    },
+    {
+      idSuffix: "reflexive-loop",
+      prompt: "How It Started가 말하는 [[reflexivity]]를 가장 잘 설명한 것은 무엇인가요?",
+      answer: "AI에 가장 위협받는 회사가 비용 절감을 위해 AI를 더 공격적으로 도입하면서, 자기 매출 기반까지 더 약하게 만드는 구조다.",
+      distractors: [
+        "AI에 위협받는 회사일수록 기존 방식을 끝까지 고수해 시장 점유율을 잃는 전형적 혁신 저항 구조다.",
+        "AI 도입 기업은 비용을 줄이지 못해 오히려 고용을 늘리며 시장을 방어하는 구조다.",
+        "AI 수혜 기업의 주가 상승이 곧바로 소비 증가로 이어져 SaaS 매출을 되살리는 구조다.",
+      ],
+      hint: "개별 회사의 합리적 선택이 전체 구조에는 더 나쁜 결과를 만드는 부분을 떠올려 보세요.",
+      explanation:
+        "이 장의 공포는 악의가 아니라 합리성입니다. 각 회사는 살아남기 위해 맞는 선택을 하는데, 그 선택이 모이면 다음 감원과 다음 가격 압박을 더 쉽게 만듭니다.",
+    },
+  ],
+  "friction-zero": [
+    {
+      idSuffix: "background-agents",
+      prompt: "When Friction Went to Zero에서 진짜 전환점으로 그리는 변화는 무엇인가요?",
+      answer: "사용자가 일일이 시키지 않아도 에이전트가 백그라운드에서 계속 비교·협상·최적화를 수행하기 시작한 것이다.",
+      distractors: [
+        "모든 소비자가 직접 가격 비교 사이트를 더 열심히 쓰기 시작한 것이다.",
+        "모델 크기가 커져 사람이 기다리는 시간이 길어졌지만 정확도만 올라간 것이다.",
+        "모든 플랫폼이 같은 가격을 쓰면서 비교의 의미가 사라진 것이다.",
+      ],
+      hint: "핵심은 사람이 매번 결정하는 구조에서, 기계가 상시 최적화하는 구조로 넘어간 점입니다.",
+      explanation:
+        "원문은 에이전트가 단순 검색도구가 아니라 행동 주체가 되는 순간을 강조합니다. 이때 소비는 이벤트가 아니라 24시간 돌아가는 자동화 과정이 됩니다.",
+    },
+    {
+      idSuffix: "friendly-face",
+      prompt: "원문이 '인간 관계의 가치'를 과대평가했다고 보는 이유는 무엇인가요?",
+      answer: "관계처럼 보이던 가치의 상당 부분이 사실은 친절한 얼굴을 한 [[friction]]이었기 때문이다.",
+      distractors: [
+        "인간 관계는 남아 있어도 정보 비대칭이 더 커져 수수료를 높일 수 있기 때문이다.",
+        "인간 관계는 기술이 발전할수록 법적으로 더 강하게 보호되기 때문이다.",
+        "인간 관계는 기계가 가격만 보게 만들어 오히려 더 높은 프리미엄을 받기 때문이다.",
+      ],
+      hint: "원문은 부동산과 배달앱을 예로 들며 '관계'가 생각보다 방어벽이 아니었다고 봅니다.",
+      explanation:
+        "관계가 완전히 무가치하다는 뜻은 아닙니다. 다만 많은 중개 수익이 진짜 전문성보다 귀찮음과 시간 부족 위에 서 있었고, 그 기반이 에이전트 앞에서 약해진다는 뜻입니다.",
+    },
+    {
+      idSuffix: "plumbing-shift",
+      prompt: "원문이 이 파트를 서비스 경쟁이 아니라 [[plumbing story]]로 읽는 이유는 무엇인가요?",
+      answer: "에이전트끼리 거래가 늘면 카드 수수료 같은 결제 마찰이 직접 공격 대상이 되어, 소비 앱 경쟁이 결제 인프라 재편으로 번지기 때문이다.",
+      distractors: [
+        "소비 앱 충격은 작고 결제망만 독립적으로 흔들리기 때문에 두 이야기를 분리해야 하기 때문이다.",
+        "결제 인프라는 인간 습관과 무관하므로 AI 확산과 연결해서 볼 이유가 없기 때문이다.",
+        "카드 수수료는 너무 작아 에이전트 입장에선 최적화할 유인이 거의 없기 때문이다.",
+      ],
+      hint: "원문은 Mastercard 보고서를 '되돌리기 어려운 지점'처럼 다룹니다.",
+      explanation:
+        "처음엔 배달·여행·보험 같은 서비스 중개가 흔들리지만, 에이전트가 거래 경로를 직접 고르기 시작하면 결국 [[interchange]]와 정산 구조까지 압박이 번집니다.",
+    },
+  ],
+  "systemic-risk": [
+    {
+      idSuffix: "why-systemic",
+      prompt: "From Sector Risk to Systemic Risk가 기술 섹터 문제를 시스템 문제로 확대하는 이유는 무엇인가요?",
+      answer: "미국 소비와 세수, 주택금융의 받침대가 사무직 소득이라서, 사무직 충격이 곧 경제 전체 충격으로 번질 수 있기 때문이다.",
+      distractors: [
+        "미국 경제에서 소비 비중이 낮아 기술 섹터 조정이 전체 경제를 거의 건드리지 않기 때문이다.",
+        "사무직 일자리는 제조업과 분리되어 있어 다른 산업의 수요를 거의 좌우하지 않기 때문이다.",
+        "AI 충격은 기업 내부 생산성에만 머물고 가계 소득 구조와는 연결되지 않기 때문이다.",
+      ],
+      hint: "이 장은 '사무직 소득이 어디까지 받치고 있나'를 묻습니다.",
+      explanation:
+        "원문은 [[white-collar]] 고용을 단순 노동시장 항목이 아니라 소비경제의 기둥으로 봅니다. 그래서 여기의 균열이 섹터 뉴스로 끝나지 않는다고 주장합니다.",
+    },
+    {
+      idSuffix: "weird-mix",
+      prompt: "이 장이 그리는 '이상한 조합'으로 가장 적절한 것은 무엇인가요?",
+      answer: "사무직 채용은 식고 장기금리는 내려가는데, 동시에 AI 인프라 지출은 강해지는 비대칭 조합이다.",
+      distractors: [
+        "채용과 소비와 금리와 AI 지출이 모두 같은 방향으로 동시에 강해지는 전형적 호황 조합이다.",
+        "AI 지출이 약해지면서 사무직 채용만 먼저 강하게 회복되는 순환 회복 조합이다.",
+        "장기금리는 오르는데 소비도 강하고 채용도 뜨거운 인플레이션 재가속 조합이다.",
+      ],
+      hint: "사람 쪽은 식는데 컴퓨트 쪽만 강한 구도를 떠올려 보세요.",
+      explanation:
+        "원문이 보는 특징은 '경기 민감 신호는 차가운데 AI 투자만 뜨거운' 상태입니다. 이런 비대칭은 단순한 성장 서사보다 구조 전환 신호에 가깝습니다.",
+    },
+    {
+      idSuffix: "global-spillover",
+      prompt: "원문이 미국 밖 국가들까지 언급하는 이유를 가장 잘 고른 것은 무엇인가요?",
+      answer: "서비스 수출과 백오피스 인력에 기대던 나라들은 경상수지와 통화 안정성까지 같이 압박받을 수 있기 때문이다.",
+      distractors: [
+        "AI 확산은 미국 외 국가들의 서비스 수출을 자동으로 늘려 대외수지가 더 좋아지기 때문이다.",
+        "서비스 수출 중심 국가는 제조업 비중이 낮아 AI 충격과 거의 무관하기 때문이다.",
+        "미국 내 사무직 충격은 국경 안에 갇혀 있고 국제금융 조건과는 연결되지 않기 때문이다.",
+      ],
+      hint: "원문은 미국 충격이 글로벌 서비스 공급망과 국제수지 문제로도 번질 수 있다고 봅니다.",
+      explanation:
+        "해외 아웃소싱과 서비스 수출도 결국 인간 사무직 노동 위에 서 있습니다. 그래서 미국의 수요 구조가 바뀌면 다른 나라의 [[current account surplus]]와 자금사정도 흔들릴 수 있습니다.",
+    },
+  ],
+  "displacement-spiral": [
+    {
+      idSuffix: "headline-lag",
+      prompt: "The Intelligence Displacement Spiral에서 헤드라인 실업률만 보면 위험을 늦게 볼 수 있는 이유는 무엇인가요?",
+      answer: "해고뿐 아니라 고임금 인력이 저임금 일자리로 내려오고, 남아 있는 사람도 불안 때문에 소비를 줄이기 때문이다.",
+      distractors: [
+        "실업률은 사무직만 따로 잡아내기 때문에 서비스업 충격을 과장해서 보여 주기 때문이다.",
+        "고임금 인력은 대체로 현금이 많아 소비를 거의 줄이지 않기 때문이다.",
+        "고용 통계는 AI 시대에 오히려 소비보다 훨씬 빠르게 악화를 반영하기 때문이다.",
+      ],
+      hint: "원문은 '직장을 잃은 사람'만이 아니라 '남아 있는 사람의 방어적 소비 축소'도 봅니다.",
+      explanation:
+        "이 장의 포인트는 숫자가 아니라 행동 변화입니다. 해고가 확정되기 전에도 소득 전망이 흐려지면 소비는 먼저 식기 시작합니다.",
+    },
+    {
+      idSuffix: "top-spenders",
+      prompt: "원문이 상위 소비층 비중을 강조하는 이유는 무엇인가요?",
+      answer: "고소득 사무직이 지출의 큰 몫을 맡고 있어, 일부 계층 충격만으로도 선택 소비가 빠르게 식을 수 있기 때문이다.",
+      distractors: [
+        "소비는 대부분 저소득층이 결정하므로 고소득층 충격은 거시경제에 거의 영향이 없기 때문이다.",
+        "상위 소비층은 불황기에도 지출을 늘리는 경향이 강해 완충 역할을 하기 때문이다.",
+        "선택 소비는 전체 소비에서 작은 비중이므로 경기 전환 신호로 보기 어렵기 때문이다.",
+      ],
+      hint: "원문은 '모든 사람이 동시에 무너져야만 소비가 꺾인다'고 보지 않습니다.",
+      explanation:
+        "지출이 한쪽에 많이 쏠려 있으면, 그 한쪽이 흔들릴 때 체감 경기는 생각보다 빨리 나빠집니다. 그래서 고소득 사무직의 약화가 중요하게 다뤄집니다.",
+    },
+    {
+      idSuffix: "spiral-chain",
+      prompt: "이 장의 나선을 가장 잘 요약한 인과관계는 무엇인가요?",
+      answer: "소득 하향 이동이 소비를 줄이고, 줄어든 소비가 기업 매출 압박을 만들며, 그 압박이 다시 AI 투자와 감원을 자극한다.",
+      distractors: [
+        "감원이 일어나도 소비는 유지되고, 소비 유지가 기업에 추가 고용 여력을 만들어 자동 회복으로 이어진다.",
+        "AI 도입이 늘수록 소비도 같이 늘어 기업이 감원을 멈추고 임금을 높인다.",
+        "서비스직 전환이 빨라질수록 이전 고임금 수준의 소비가 복원되어 나선이 끊긴다.",
+      ],
+      hint: "한 고리가 다음 고리를 강화하는 구조라는 점을 떠올려 보세요.",
+      explanation:
+        "원문은 이 과정을 자연 브레이크가 없는 음의 루프로 묘사합니다. 각 단계가 다음 자동화와 다음 소비 둔화를 쉽게 만들어 연쇄가 지속된다는 뜻입니다.",
+    },
+  ],
+  "daisy-chain": [
+    {
+      idSuffix: "credit-core",
+      prompt: "The Daisy Chain of Correlated Bets가 말하는 핵심 취약점은 무엇인가요?",
+      answer: "반복매출과 안정적 성장에 기대어 쌓인 사모 신용 구조가, AI가 그 반복성을 흔들면 한꺼번에 재평가되기 쉽다는 점이다.",
+      distractors: [
+        "사모 신용은 실물 매출과 무관하게 움직여 SaaS 충격과 거의 연결되지 않는다는 점이다.",
+        "반복매출 모델은 경기와 기술 변화에 가장 둔감하므로 오히려 안전자산처럼 행동한다는 점이다.",
+        "AI 도입이 늘수록 사모 신용의 회수율이 자동으로 개선된다는 점이다.",
+      ],
+      hint: "원문은 '반복'이라는 가정을 사실상 담보처럼 사용한 구조를 의심합니다.",
+      explanation:
+        "이 장은 [[ARR]]이 영원히 반복될 것이라는 믿음이 깨질 때 어떤 금융 구조가 민감한지 보여 줍니다. 매출의 안정성 가정이 흔들리면 신용 구조 전체가 다시 계산됩니다.",
+    },
+    {
+      idSuffix: "marks-lag",
+      prompt: "원문이 비상장 구조의 '느린 평가'를 안심 재료로 보지 않는 이유는 무엇인가요?",
+      answer: "거래가 적고 구조가 복잡하면 손실이 없어지는 것이 아니라 늦게 드러날 뿐이기 때문이다.",
+      distractors: [
+        "거래가 적을수록 실제 손실도 자동으로 작아지기 때문이다.",
+        "장부 평가가 느리면 대출 계약 조건도 함께 사라져 위험이 줄어들기 때문이다.",
+        "비상장 구조는 투자자 환매가 없어서 가치 훼손이 원천적으로 불가능하기 때문이다.",
+      ],
+      hint: "원문은 '표시가 늦다'와 '위험이 없다'를 구분합니다.",
+      explanation:
+        "가격이 매일 찍히지 않는다고 해서 손실이 사라지는 것은 아닙니다. 오히려 [[SPV]], 보험자금, 늦은 마킹이 겹치면 어디에 얼마나 쌓였는지 보기가 더 어려워집니다.",
+    },
+    {
+      idSuffix: "correlated-bets",
+      prompt: "원문이 이 구조를 '서로 연결된 상관 베팅'이라고 부르는 이유는 무엇인가요?",
+      answer: "겉보기 자산은 달라도 대부분이 '사무직 생산성과 SaaS 현금흐름은 계속 버틴다'는 같은 가정 위에 놓여 있기 때문이다.",
+      distractors: [
+        "각 자산이 완전히 다른 산업과 현금흐름을 가져 공통 가정이 거의 없기 때문이다.",
+        "규제가 강할수록 자산 간 상관관계가 자동으로 낮아지기 때문이다.",
+        "보험사와 연금 자금은 소프트웨어 가치평가와 연결되지 않기 때문이다.",
+      ],
+      hint: "겉모습이 다른 자산들이 실제론 같은 전제 하나에 걸려 있다는 점을 보세요.",
+      explanation:
+        "원문은 다양한 구조가 따로따로인 것처럼 보여도 실제론 같은 신념에 기대고 있었다고 봅니다. 그래서 한 가정이 깨질 때 충격이 동시에 퍼질 수 있습니다.",
+    },
+  ],
+  "mortgage-question": [
+    {
+      idSuffix: "vs-2008",
+      prompt: "The Mortgage Question가 2008년과 이번 시나리오를 구분하는 핵심은 무엇인가요?",
+      answer: "이번 우려는 초기 대출 질보다 차주의 미래 소득 경로가 무너질 수 있다는 데 더 가깝다.",
+      distractors: [
+        "이번에도 핵심은 처음부터 부실한 대출이 대량 발행되었다는 점이다.",
+        "이번엔 주택 가격이 너무 강해 오히려 대출 건전성이 자동으로 좋아진다는 점이다.",
+        "이번엔 모기지 시장이 실물경제와 분리되어 있어 고용 충격과 거의 연결되지 않는다는 점이다.",
+      ],
+      hint: "원문은 '오늘의 건전함'과 '내일의 소득'을 구분합니다.",
+      explanation:
+        "이 장은 대출 출발점보다 상환 능력의 미래를 봅니다. 지금은 멀쩡한 [[prime mortgage]]라도 소득 경로가 흔들리면 다시 위험자산처럼 읽힐 수 있다는 뜻입니다.",
+    },
+    {
+      idSuffix: "hidden-stress",
+      prompt: "원문이 [[HELOC]]와 카드부채, 은퇴계정 대출을 같이 언급하는 이유는 무엇인가요?",
+      answer: "가계가 여러 우회 수단으로 시간을 벌 수 있어, 표면상 연체보다 내부 스트레스가 먼저 커질 수 있기 때문이다.",
+      distractors: [
+        "이 수단들은 모두 가계 부채를 자동으로 줄여 주택 시장을 안정시키기 때문이다.",
+        "이 수단들은 주택가격과 무관하게 소득 감소를 즉시 상쇄해 주기 때문이다.",
+        "이 수단들은 사용량이 늘수록 차주의 부채비율을 개선해 주기 때문이다.",
+      ],
+      hint: "원문은 문제가 안 보인다고 문제가 없다고 보지 않습니다.",
+      explanation:
+        "가계는 보통 바로 무너지지 않고 버팁니다. 그래서 [[debt-to-income ratio]]가 안에서 먼저 나빠지고, 연체와 강제 매물은 나중에야 드러날 수 있습니다.",
+    },
+    {
+      idSuffix: "metro-risk",
+      prompt: "기술 대도시가 먼저 흔들릴 수 있다고 보는 논리로 가장 적절한 것은 무엇인가요?",
+      answer: "고연봉 사무직 수요에 기대던 지역일수록 소득 충격이 주택 수요와 가격에 더 빨리 반영될 수 있기 때문이다.",
+      distractors: [
+        "기술 대도시는 주택공급이 충분해 소득 충격이 가격에 잘 반영되지 않기 때문이다.",
+        "기술 대도시는 금리 변화와 무관하게 항상 같은 수준의 주택 수요가 유지되기 때문이다.",
+        "고연봉 수요가 많은 지역일수록 오히려 AI 충격에 대한 방어력이 자동으로 강해지기 때문이다.",
+      ],
+      hint: "이 장은 지역별로 소득 기반이 얼마나 한쪽에 몰려 있는지도 봅니다.",
+      explanation:
+        "원문은 집값을 추상적 국가 평균으로만 보지 않습니다. 특정 소득 구조에 기대던 도시일수록 노동시장 변화가 더 빠르게 주택시장으로 번질 수 있습니다.",
+    },
+  ],
+  "battle-against-time": [
+    {
+      idSuffix: "policy-lag",
+      prompt: "The Battle Against Time에서 '시간'이 핵심 변수인 이유는 무엇인가요?",
+      answer: "소득과 소비가 약해져 세수는 줄어드는데 지원 수요는 늘어나므로, 정책이 늦을수록 같은 처방의 효과가 약해지기 때문이다.",
+      distractors: [
+        "세수와 지원 수요가 같은 방향으로 움직여 정책 시차가 거의 중요하지 않기 때문이다.",
+        "AI 충격은 완전히 순환적이어서 시간이 지나면 자동으로 원래 상태로 돌아오기 때문이다.",
+        "정책은 언제 도입해도 동일한 속도로 실물경제에 반영되기 때문이다.",
+      ],
+      hint: "원문은 정답 부재만큼이나 집행의 늦음을 위험하게 봅니다.",
+      explanation:
+        "이 장은 내용보다 타이밍을 무섭게 봅니다. 충격이 먼저 퍼진 뒤에야 제도가 움직이면, 같은 정책도 훨씬 더 작은 효과만 낼 수 있습니다.",
+    },
+    {
+      idSuffix: "stabilizers",
+      prompt: "원문이 [[automatic stabilizers]]만으로는 부족할 수 있다고 보는 이유는 무엇인가요?",
+      answer: "경기순환용 장치는 일시적 침체엔 맞지만, 인간 노동의 구조적 대체 속도를 따라가기엔 부족할 수 있기 때문이다.",
+      distractors: [
+        "자동 안정 장치는 구조 변화가 클수록 더 강력하게 작동해 새 제도를 불필요하게 만들기 때문이다.",
+        "자동 안정 장치는 오직 물가상승기에만 쓰이고 경기하강기에는 거의 작동하지 않기 때문이다.",
+        "자동 안정 장치는 노동소득이 줄수록 세수를 자동으로 늘려 주기 때문이다.",
+      ],
+      hint: "순환 경기 문제와 구조 변화 문제를 구분해 보세요.",
+      explanation:
+        "실업급여와 기존 이전지출은 중요하지만, 원문은 그것만으로는 속도와 규모가 맞지 않을 수 있다고 봅니다. 문제의 뿌리가 경기순환보다 배분 구조에 더 가깝기 때문입니다.",
+    },
+    {
+      idSuffix: "new-claims",
+      prompt: "원문이 [[inference compute tax]]나 [[sovereign wealth fund]] 같은 아이디어를 꺼내는 이유는 무엇인가요?",
+      answer: "AI 수익이 노동소득 바깥으로 쏠릴 때, 감소한 [[labor share of GDP]]를 메울 새 청구권이 필요할 수 있기 때문이다.",
+      distractors: [
+        "AI 수익은 이미 광범위하게 임금으로 환원되므로 추가 배분 장치가 필요 없기 때문이다.",
+        "새로운 과세나 공적 보유 장치는 오직 인플레이션 억제와만 관련 있고 소득 배분과는 무관하기 때문이다.",
+        "노동소득 비중이 내려갈수록 기존 세금 체계가 더 강해져 재정 공백이 자동으로 줄어들기 때문이다.",
+      ],
+      hint: "이 장은 'AI 이익을 누가 어떻게 가져가느냐'를 묻습니다.",
+      explanation:
+        "정책 아이디어의 목적은 AI 자체를 벌주는 것이 아니라, 사람 소득이 줄어드는 구조에서 사회 전체가 어떤 식으로 다시 몫을 가질지 묻는 데 있습니다.",
+    },
+  ],
+  "premium-unwind": [
+    {
+      idSuffix: "repricing",
+      prompt: "The Intelligence Premium Unwind가 재평가된다고 보는 대상은 무엇인가요?",
+      answer: "희소한 인간 인지 노동에 붙어 있던 높은 가격표, 즉 [[intelligence premium]]이다.",
+      distractors: [
+        "모든 인간 노동 전체의 가치가 예외 없이 0으로 수렴한다는 가정이다.",
+        "오직 반도체 기업의 자본지출 계획만 다시 가격 매겨진다는 주장이다.",
+        "기계 계산 비용이 오르기 때문에 인간 노동이 다시 희소해진다는 가정이다.",
+      ],
+      hint: "원문은 인간 전체의 쓸모를 말하는 게 아니라, 특정 노동 가격표를 말합니다.",
+      explanation:
+        "이 결론의 중심은 재평가입니다. 과거에 비싸게 매겨졌던 일부 지적 노동의 시장가격이 다시 계산될 수 있다는 뜻이지, 인간 가치가 사라진다는 선언이 아닙니다.",
+    },
+    {
+      idSuffix: "not-collapse",
+      prompt: "이 장을 종말론으로 읽으면 안 되는 이유를 가장 잘 설명한 것은 무엇인가요?",
+      answer: "인간 가치 전체가 사라진다는 말이 아니라, 너무 비싸게 매겨졌던 일부 인지 노동의 가격이 먼저 내려갈 수 있다는 뜻이기 때문이다.",
+      distractors: [
+        "원문은 AI가 실제로는 경제에 거의 영향을 주지 못한다고 보기 때문이다.",
+        "원문은 사무직과 소비 충격이 오더라도 금융시장에는 전혀 번지지 않는다고 보기 때문이다.",
+        "원문은 새로운 소득 구조가 이미 완성되었으니 조정이 거의 없다고 보기 때문이다.",
+      ],
+      hint: "이 장은 부정이 아니라 범위 조정의 문제입니다.",
+      explanation:
+        "결론은 '사람이 무가치하다'가 아니라 '무엇이 진짜로 희소한 인간 능력인가를 다시 묻자'에 가깝습니다. 다만 그 재평가 과정이 아플 수 있다는 점을 강조합니다.",
+    },
+    {
+      idSuffix: "canary",
+      prompt: "원문이 마지막에 '카나리아가 아직 완전히 죽지 않았다'는 식의 어조를 남기는 이유는 무엇인가요?",
+      answer: "위기가 끝났다는 뜻이 아니라, 경고 신호를 읽고 대비할 시간이 아직 남아 있다는 뜻이기 때문이다.",
+      distractors: [
+        "실제 위험은 이미 지나갔고 앞으로는 자동 회복만 남았다는 뜻이기 때문이다.",
+        "금융시장 조정이 끝났으니 소비와 고용은 더 볼 필요가 없다는 뜻이기 때문이다.",
+        "AI 충격은 기술 섹터 안에서만 정리되었으니 시스템 문제로 보지 말라는 뜻이기 때문이다.",
+      ],
+      hint: "마지막 문장은 안심보다 경고에 가깝습니다.",
+      explanation:
+        "원문은 절망으로 끝내지 않습니다. 하지만 그 낙관은 '문제 없음'이 아니라 '지금이라도 읽고 대비하면 늦지 않을 수 있음'에 더 가깝습니다.",
+    },
+  ],
+};
+
+const termClusters = {
+  framing: ["left-tail risk", "Ghost GDP", "velocity of money", "intelligence premium"],
+  "labor-consumer": ["white-collar", "prime mortgage", "JOLTS", "discretionary spending", "labor share of GDP"],
+  software: ["agentic coding", "CIO", "procurement", "systems of record", "ACV", "reflexivity"],
+  intermediation: [
+    "friction",
+    "intermediation",
+    "customer lifetime value",
+    "moat",
+    "habitual intermediation",
+    "interchange",
+    "stablecoin",
+    "plumbing story",
+  ],
+  "global-infrastructure": ["OpEx substitution", "hyperscaler", "current account surplus", "IMF"],
+  "private-finance": [
+    "private credit",
+    "leveraged buyout",
+    "ARR",
+    "EBITDA",
+    "debt covenant",
+    "closed-end vehicle",
+    "permanent capital",
+    "annuity",
+    "regulatory arbitrage",
+    "SPV",
+    "risk-based capital",
+  ],
+  "household-policy": [
+    "HELOC",
+    "debt-to-income ratio",
+    "QE",
+    "automatic stabilizers",
+    "inference compute tax",
+    "sovereign wealth fund",
+  ],
+};
+
+const termClusterLookup = Object.fromEntries(
+  Object.values(termClusters).flatMap((labels) =>
+    labels.map((label) => [normalizeTerm(label), labels]),
+  ),
+);
 
 init();
