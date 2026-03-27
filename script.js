@@ -581,10 +581,8 @@ const refs = {
   fontSizeRange: document.querySelector("#font-size-range"),
   fontSizeValue: document.querySelector("#font-size-value"),
   fontSizeReset: document.querySelector("#font-size-reset"),
-  mobileDock: document.querySelector("#mobile-dock"),
   mobileOutlineToggle: document.querySelector("#mobile-outline-toggle"),
   mobileFontToggle: document.querySelector("#mobile-font-toggle"),
-  mobileModeExit: document.querySelector("#mobile-mode-exit"),
   mobileSheet: document.querySelector("#mobile-sheet"),
   mobileSheetClose: document.querySelector("#mobile-sheet-close"),
   mobileSheetKicker: document.querySelector("#mobile-sheet-kicker"),
@@ -1420,7 +1418,6 @@ function updateMobileModeUI() {
   refs.mobileModeToggle.classList.toggle("active", state.mobileMode);
   refs.mobileModeToggle.setAttribute("aria-pressed", String(state.mobileMode));
   refs.mobileModeToggle.textContent = state.mobileMode ? "기본 보기" : "모바일 보기";
-  refs.mobileDock.hidden = !state.mobileMode;
 }
 
 function openMobileSheet(panel) {
@@ -1828,7 +1825,6 @@ function bindEvents() {
 
   refs.examSubmit.addEventListener("click", submitExam);
   refs.mobileModeToggle.addEventListener("click", () => applyMobileMode(!state.mobileMode));
-  refs.mobileModeExit.addEventListener("click", () => applyMobileMode(false));
   refs.mobileOutlineToggle.addEventListener("click", () => openMobileSheet("outline"));
   refs.mobileFontToggle.addEventListener("click", () => openMobileSheet("font"));
   refs.mobileSheetClose.addEventListener("click", closeMobileSheet);
