@@ -27,6 +27,7 @@
 html {
   font-size: calc(16px * var(--font-scale));
   scroll-behavior: smooth;
+  scroll-padding-top: 120px;
 }
 
 body {
@@ -918,6 +919,7 @@ section[id] {
 .mobile-reading-mode {
   --content-width: min(100vw - 8px, 100%);
   --mobile-inline-pad: 16px;
+  scroll-padding-top: 92px;
 }
 
 .mobile-reading-mode .site-header {

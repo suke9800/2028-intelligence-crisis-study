@@ -1447,6 +1447,7 @@ function updateMobileModeUI() {
   document.body.classList.toggle("mobile-reading-mode", state.mobileMode);
   refs.mobileModeToggle.classList.toggle("active", state.mobileMode);
   refs.mobileModeToggle.setAttribute("aria-pressed", String(state.mobileMode));
+  document.documentElement.style.scrollPaddingTop = state.mobileMode ? "92px" : "120px";
   refs.mobileModeToggle.textContent = state.mobileMode ? "기본 보기" : "모바일 보기";
 }
 
@@ -1517,12 +1518,29 @@ function navigateToSection(sectionId, { closeSheet = false } = {}) {
     window.history.replaceState(null, "", `#${sectionId}`);
   }
 
+  const targetTop = Math.max(
+    0,
+    window.pageYOffset + sectionCard.getBoundingClientRect().top - getStickyHeaderOffset(),
+  );
+
+  sectionCard.scrollIntoView({
+    behavior: "auto",
+    block: "start",
+    inline: "nearest",
+  });
+
   window.requestAnimationFrame(() => {
     window.scrollTo({
-      top: Math.max(0, window.scrollY + sectionCard.getBoundingClientRect().top - getStickyHeaderOffset()),
+      top: targetTop,
       behavior: "smooth",
     });
   });
+
+  window.setTimeout(() => {
+    if (Math.abs(window.pageYOffset - targetTop) > 2) {
+      window.scrollTo(0, targetTop);
+    }
+  }, 220);
 }
 
 function openMobileSectionFromLink(sectionId) {
@@ -1716,6 +1734,10 @@ function setupDraggableOutline() {
 
   outline.addEventListener("pointerdown", (event) => {
     if (event.pointerType === "touch" || event.button !== 0) {
+      return;
+    }
+
+    if (event.target instanceof Element && event.target.closest("a, button")) {
       return;
     }
 
